@@ -12,6 +12,9 @@
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
             touch-action: manipulation;
+            background-color: #f0f4f8;
+            background-image: radial-gradient(#dbeafe 1px, transparent 1px);
+            background-size: 16px 16px;
         }
         .screen {
             display: none;
@@ -29,7 +32,7 @@
             display: none;
         }
         .setting-button-group label {
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             border: 2px solid #cbd5e1;
             border-radius: 9999px;
             cursor: pointer;
@@ -37,9 +40,10 @@
             font-weight: 700;
         }
         .setting-button-group input[type="radio"]:checked + label {
-            background-color: #3b82f6;
+            background-image: linear-gradient(to right, #60a5fa, #3b82f6);
             color: white;
             border-color: #3b82f6;
+            transform: scale(1.05);
         }
         .keypad-btn {
             transition: all 0.1s ease;
@@ -49,10 +53,12 @@
             background-color: #e2e8f0;
         }
         .action-btn {
-             transition: all 0.1s ease;
+             transition: all 0.2s ease;
+             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
         }
         .action-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
         }
         .feedback {
             position: absolute;
@@ -65,6 +71,7 @@
             opacity: 0;
             transition: opacity 0.5s ease;
             pointer-events: none;
+            text-shadow: 0 0 15px rgba(255,255,255,0.7);
         }
         .feedback.correct {
             color: #22c55e;
@@ -74,22 +81,60 @@
             color: #ef4444;
             opacity: 1;
         }
+        .mistake-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+         .mistake-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen">
 
     <div class="container mx-auto p-4 max-w-lg w-full">
         <!-- スタート画面 -->
-        <div id="start-screen" class="screen active flex-col space-y-8 bg-white p-8 rounded-2xl shadow-lg">
-            <h1 class="text-4xl font-extrabold text-center text-blue-600">算数チャレンジ</h1>
+        <div id="start-screen" class="screen active flex-col space-y-6 bg-white p-8 rounded-2xl shadow-xl">
+            <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">算数チャレンジ</h1>
 
             <!-- 難易度設定 -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-bold text-slate-700 text-center">難易度</h2>
-                <div class="setting-button-group" id="difficulty-setting">
-                    <input type="radio" id="diff-1" name="difficulty" value="1" checked><label for="diff-1">1桁</label>
-                    <input type="radio" id="diff-2" name="difficulty" value="2"><label for="diff-2">2桁</label>
-                    <input type="radio" id="diff-3" name="difficulty" value="3"><label for="diff-3">3桁</label>
+            <div class="bg-slate-50 p-4 rounded-lg">
+                <div class="flex justify-center items-center space-x-6">
+                    <!-- Vertical Text -->
+                    <div class="flex flex-col space-y-2 text-xl font-bold text-slate-500 text-center">
+                        <span>難</span>
+                        <span>易</span>
+                        <span>度</span>
+                    </div>
+                    
+                    <!-- Selection Area -->
+                    <div class="flex flex-grow items-start justify-center space-x-4">
+                        <!-- Column 1 -->
+                        <div class="text-center">
+                            <p class="font-semibold mb-2">1つ目の数</p>
+                            <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-1">
+                                <input type="radio" id="d1-1" name="difficulty1" value="1" checked><label for="d1-1">1桁</label>
+                                <input type="radio" id="d1-2" name="difficulty1" value="2"><label for="d1-2">2桁</label>
+                                <input type="radio" id="d1-3" name="difficulty1" value="3"><label for="d1-3">3桁</label>
+                            </div>
+                        </div>
+
+                        <!-- Middle "×" -->
+                        <div class="self-center text-3xl font-bold text-slate-400 pt-8">×</div>
+
+                        <!-- Column 2 -->
+                        <div class="text-center">
+                            <p class="font-semibold mb-2">2つ目の数</p>
+                            <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-2">
+                                <input type="radio" id="d2-1" name="difficulty2" value="1" checked><label for="d2-1">1桁</label>
+                                <input type="radio" id="d2-2" name="difficulty2" value="2"><label for="d2-2">2桁</label>
+                                <input type="radio" id="d2-3" name="difficulty2" value="3"><label for="d2-3">3桁</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -109,25 +154,25 @@
             <div class="space-y-4">
                 <h2 class="text-xl font-bold text-slate-700 text-center">制限時間</h2>
                 <div class="setting-button-group" id="time-setting">
-                    <input type="radio" id="time-30" name="time" value="30"><label for="time-30">30秒</label>
-                    <input type="radio" id="time-60" name="time" value="60" checked><label for="time-60">1分</label>
+                    <input type="radio" id="time-30" name="time" value="30" checked><label for="time-30">30秒</label>
+                    <input type="radio" id="time-60" name="time" value="60"><label for="time-60">1分</label>
                     <input type="radio" id="time-180" name="time" value="180"><label for="time-180">3分</label>
                     <input type="radio" id="time-300" name="time" value="300"><label for="time-300">5分</label>
                 </div>
             </div>
 
-            <button id="start-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-xl text-2xl shadow-md action-btn">スタート！</button>
+            <button id="start-button" class="w-full text-white font-bold py-4 px-4 rounded-xl text-2xl action-btn bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">スタート！</button>
         </div>
 
         <!-- ゲーム画面 -->
-        <div id="game-screen" class="screen flex-col space-y-4 bg-white p-6 rounded-2xl shadow-lg relative">
+        <div id="game-screen" class="screen flex-col space-y-4 bg-white p-6 rounded-2xl shadow-xl relative">
              <div id="feedback" class="feedback"></div>
             <div class="flex justify-between items-center">
                 <div id="question-number" class="text-xl font-bold text-slate-600">第1問</div>
-                <div id="timer" class="text-2xl font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-full">1:00</div>
+                <div id="timer" class="text-2xl font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-full transition-colors duration-300">0:30</div>
             </div>
             <div class="bg-slate-100 p-8 rounded-lg text-center">
-                <div id="question" class="text-6xl font-extrabold text-slate-800">12 + 34</div>
+                <div id="question" class="text-6xl font-extrabold text-slate-800 break-all">12 + 34</div>
             </div>
             <div id="answer-display" class="w-full bg-slate-200 text-right p-4 rounded-lg text-5xl font-bold text-slate-900 min-h-[80px]"></div>
             
@@ -145,12 +190,12 @@
                 <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="0">0</button>
                 <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg text-orange-500" data-key="BS">⌫</button>
             </div>
-            <button id="submit-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-2xl shadow-md action-btn mt-2">決定</button>
+            <button id="submit-button" class="w-full text-white font-bold py-4 px-4 rounded-xl text-2xl action-btn bg-gradient-to-br from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 mt-2">決定</button>
         </div>
 
         <!-- リザルト画面 -->
-        <div id="result-screen" class="screen flex-col space-y-6 bg-white p-8 rounded-2xl shadow-lg text-center">
-            <h1 class="text-4xl font-extrabold text-blue-600">結果発表</h1>
+        <div id="result-screen" class="screen flex-col space-y-4 bg-white p-8 rounded-2xl shadow-xl text-center">
+            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">結果発表</h1>
             <div class="bg-slate-100 p-6 rounded-lg space-y-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-600">得点</h2>
@@ -169,11 +214,19 @@
             </div>
             <div class="bg-blue-50 p-4 rounded-lg">
                  <h2 class="text-lg font-bold text-blue-800 mb-2">コメント</h2>
-                 <p id="comment" class="text-slate-700">非常に高い正答率です。繰り上がりがある問題でミスをしているので気を付けていきましょう！</p>
+                 <p id="comment" class="text-slate-700"></p>
             </div>
-            <div class="flex space-x-4">
-                <button id="back-to-start-button" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl text-xl shadow-md action-btn">戻る</button>
-                <button id="retry-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xl shadow-md action-btn">もう一度</button>
+            
+            <div id="mistakes-section" class="hidden w-full">
+                <button id="review-mistakes-button" class="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-2 px-4 rounded-lg mb-2 action-btn">間違えた問題のふりかえり</button>
+                <div id="mistakes-container" class="hidden bg-slate-50 p-4 rounded-lg max-h-48 overflow-y-auto text-left">
+                    <!-- Mistakes will be populated here -->
+                </div>
+            </div>
+
+            <div class="flex space-x-4 pt-2">
+                <button id="back-to-start-button" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl text-xl action-btn">戻る</button>
+                <button id="retry-button" class="w-full text-white font-bold py-3 px-4 rounded-xl text-xl action-btn bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">もう一度</button>
             </div>
         </div>
     </div>
@@ -199,6 +252,9 @@
         const backToStartButton = document.getElementById('back-to-start-button');
         const retryButton = document.getElementById('retry-button');
         const feedbackEl = document.getElementById('feedback');
+        const mistakesSection = document.getElementById('mistakes-section');
+        const reviewMistakesButton = document.getElementById('review-mistakes-button');
+        const mistakesContainer = document.getElementById('mistakes-container');
 
         // Game State
         let settings = {};
@@ -218,17 +274,14 @@
         }
 
         function generateNumber(digits) {
+            if (digits == 1) return Math.floor(Math.random() * 10); // 0-9
             const min = Math.pow(10, digits - 1);
             const max = Math.pow(10, digits) - 1;
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         function generateNumberWithSign(digits) {
-             // 1桁の場合、0も許可
-            const min = digits === 1 ? 0 : Math.pow(10, digits - 1);
-            const max = Math.pow(10, digits) - 1;
-            let num = Math.floor(Math.random() * (max - min + 1)) + min;
-
+            let num = generateNumber(digits);
             if (Math.random() < 0.4) { // 40% chance of being negative
                 return -num;
             }
@@ -237,7 +290,9 @@
 
 
         function generateQuestion() {
-            const digits = parseInt(settings.difficulty);
+            const digits1 = parseInt(settings.difficulty1);
+            const digits2 = parseInt(settings.difficulty2);
+
             let op = settings.operator;
             if (op === 'all') {
                 const ops = ['+', '-', '*', '/'];
@@ -248,17 +303,16 @@
 
             let num1, num2, questionText;
 
-            // For division, stick to positive integers for simplicity
             if (op === '/') {
-                num1 = generateNumber(digits);
-                num2 = generateNumber(digits);
-                const product = num1 * num2;
-                currentAnswer = num1;
-                num1 = product;
+                // Ensure integer result by generating the answer first
+                num2 = generateNumber(digits2);
+                if (num2 === 0) num2 = 1; // Avoid division by zero
+                currentAnswer = generateNumber(digits1);
+                num1 = currentAnswer * num2;
                 questionText = `${num1} ÷ ${num2}`;
             } else {
-                num1 = generateNumberWithSign(digits);
-                num2 = generateNumberWithSign(digits);
+                num1 = generateNumberWithSign(digits1);
+                num2 = generateNumberWithSign(digits2);
 
                 switch (op) {
                     case '+':
@@ -270,10 +324,6 @@
                         questionText = `${formatNum(num1)} - ${formatNum(num2)}`;
                         break;
                     case '*':
-                        // For simplicity on multiplication, let's reduce chance of two negatives
-                        if(digits > 1 && num1 < 0 && num2 < 0){
-                           num2 = -num2; // make one positive
-                        }
                         currentAnswer = num1 * num2;
                         questionText = `${formatNum(num1)} × ${formatNum(num2)}`;
                         break;
@@ -322,6 +372,12 @@
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 10) {
+                timerEl.classList.add('text-red-500', 'font-bold');
+            } else {
+                timerEl.classList.remove('text-red-500', 'font-bold');
+            }
 
             if (timeLeft <= 0) {
                 endGame();
@@ -329,7 +385,8 @@
         }
 
         function startGame() {
-            settings.difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+            settings.difficulty1 = document.querySelector('input[name="difficulty1"]:checked').value;
+            settings.difficulty2 = document.querySelector('input[name="difficulty2"]:checked').value;
             settings.operator = document.querySelector('input[name="operator"]:checked').value;
             settings.time = document.querySelector('input[name="time"]:checked').value;
 
@@ -341,7 +398,7 @@
             questionHistory = [];
 
             generateQuestion();
-            updateTimer();
+            updateTimer(); // Call once to set initial time and color
             timer = setInterval(updateTimer, 1000);
 
             showScreen('game');
@@ -351,6 +408,34 @@
             clearInterval(timer);
             showResults();
             showScreen('result');
+        }
+        
+        function populateMistakesList() {
+            mistakesContainer.innerHTML = ''; // Clear previous results
+            const mistakes = questionHistory.filter(h => !h.isCorrect);
+
+            if (mistakes.length === 0) {
+                mistakesSection.classList.add('hidden');
+                return;
+            }
+            
+            mistakesSection.classList.remove('hidden');
+            mistakesContainer.classList.add('hidden'); // Hide list initially
+            reviewMistakesButton.textContent = `間違えた${mistakes.length}問のふりかえり`;
+
+
+            mistakes.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'mistake-item';
+                
+                const questionText = m.question.replace('*', '×').replace('/', '÷');
+                
+                item.innerHTML = `
+                    <div class="font-semibold text-slate-700">${questionText} = ${m.correctAnswer}</div>
+                    <div class="text-right"><span class="text-red-500 font-bold">${m.userAnswer}</span> と解答</div>
+                `;
+                mistakesContainer.appendChild(item);
+            });
         }
 
         function showResults() {
@@ -376,9 +461,7 @@
 
             const mistakes = questionHistory.filter(h => !h.isCorrect);
             if (mistakes.length > 0) {
-                const mistakeTypes = {
-                    '+': 0, '-': 0, '*': 0, '/': 0
-                };
+                const mistakeTypes = {'+': 0, '-': 0, '*': 0, '/': 0};
                 mistakes.forEach(m => {
                     if (m.question.includes('+')) mistakeTypes['+']++;
                     if (m.question.includes('-')) mistakeTypes['-']++;
@@ -394,10 +477,12 @@
                 }
             }
             commentEl.innerText = commentText;
+            
+            populateMistakesList();
         }
         
         function handleKeypadInput(key) {
-             if (key === 'C') {
+             if (key === 'C') { // Though button is removed, keep for potential keyboard use
                 userAnswer = '';
             } else if (key === 'BS') {
                 userAnswer = userAnswer.slice(0, -1);
@@ -413,19 +498,20 @@
 
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
-
         keypadButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                handleKeypadInput(button.dataset.key);
-            });
+            button.addEventListener('click', () => handleKeypadInput(button.dataset.key));
         });
-
         submitButton.addEventListener('click', checkAnswer);
         retryButton.addEventListener('click', startGame);
         backToStartButton.addEventListener('click', () => showScreen('start'));
+        
+        reviewMistakesButton.addEventListener('click', () => {
+            mistakesContainer.classList.toggle('hidden');
+        });
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active')) {
+                e.preventDefault(); // Prevent default browser actions for keys
                 if (e.key >= '0' && e.key <= '9' || e.key === '-') {
                     handleKeypadInput(e.key);
                 } else if (e.key === 'Backspace') {
@@ -435,8 +521,8 @@
                 }
             }
         });
-
     </script>
 </body>
 </html>
+
 
