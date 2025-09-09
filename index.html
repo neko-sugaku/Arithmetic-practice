@@ -265,6 +265,7 @@
         let currentAnswer;
         let userAnswer = '';
         let questionHistory = [];
+        let calculatedFontSize = '';
 
         // --- Functions ---
 
@@ -349,7 +350,9 @@
             }
             
             questionEl.textContent = questionText;
-            adjustFontSize(questionEl);
+            if (calculatedFontSize) {
+                questionEl.style.fontSize = calculatedFontSize;
+            }
             questionNumberEl.textContent = `第${questionCount}問`;
         }
         
@@ -409,6 +412,20 @@
             settings.operator = document.querySelector('input[name="operator"]:checked').value;
             settings.time = document.querySelector('input[name="time"]:checked').value;
 
+            showScreen('game'); // Show screen first to get element dimensions
+
+            // Calculate font size once based on the longest possible question string
+            const maxDigits1 = parseInt(settings.difficulty1);
+            const maxDigits2 = parseInt(settings.difficulty2);
+            // Create a worst-case string like "(-999) + (-999)"
+            const placeholder1 = '(-' + '9'.repeat(maxDigits1) + ')';
+            const placeholder2 = '(-' + '9'.repeat(maxDigits2) + ')';
+            const dummyText = `${placeholder1} + ${placeholder2}`;
+            
+            questionEl.textContent = dummyText; // Temporarily set the text
+            adjustFontSize(questionEl); // Calculate the appropriate font size
+            calculatedFontSize = questionEl.style.fontSize; // Store the calculated size
+
             timeLeft = parseInt(settings.time);
             questionCount = 1;
             correctCount = 0;
@@ -419,8 +436,6 @@
             generateQuestion();
             updateTimer(); // Call once to set initial time and color
             timer = setInterval(updateTimer, 1000);
-
-            showScreen('game');
         }
 
         function endGame() {
