@@ -141,11 +141,11 @@
                 <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="1">1</button>
                 <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="2">2</button>
                 <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="3">3</button>
-                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="C">C</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="-">-</button>
                 <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="0">0</button>
-                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="BS">⌫</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg text-orange-500" data-key="BS">⌫</button>
             </div>
-            <button id="submit-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-2xl shadow-md action-btn">決定</button>
+            <button id="submit-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-2xl shadow-md action-btn mt-2">決定</button>
         </div>
 
         <!-- リザルト画面 -->
@@ -153,12 +153,18 @@
             <h1 class="text-4xl font-extrabold text-blue-600">結果発表</h1>
             <div class="bg-slate-100 p-6 rounded-lg space-y-4">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-600">正答数</h2>
-                    <p id="score" class="text-4xl font-bold text-slate-800">30問中27問</p>
+                    <h2 class="text-lg font-bold text-slate-600">得点</h2>
+                    <p id="final-score" class="text-5xl font-extrabold text-blue-600">2430</p>
                 </div>
-                <div>
-                    <h2 class="text-lg font-bold text-slate-600">正答率</h2>
-                    <p id="accuracy" class="text-4xl font-bold text-slate-800">90%</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-600">正解数</h2>
+                        <p id="score" class="text-4xl font-bold text-slate-800">27問</p>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-600">正答率</h2>
+                        <p id="accuracy" class="text-4xl font-bold text-slate-800">90%</p>
+                    </div>
                 </div>
             </div>
             <div class="bg-blue-50 p-4 rounded-lg">
@@ -188,6 +194,7 @@
         const submitButton = document.getElementById('submit-button');
         const scoreEl = document.getElementById('score');
         const accuracyEl = document.getElementById('accuracy');
+        const finalScoreEl = document.getElementById('final-score');
         const commentEl = document.getElementById('comment');
         const backToStartButton = document.getElementById('back-to-start-button');
         const retryButton = document.getElementById('retry-button');
@@ -216,6 +223,19 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        function generateNumberWithSign(digits) {
+             // 1桁の場合、0も許可
+            const min = digits === 1 ? 0 : Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            let num = Math.floor(Math.random() * (max - min + 1)) + min;
+
+            if (Math.random() < 0.4) { // 40% chance of being negative
+                return -num;
+            }
+            return num;
+        }
+
+
         function generateQuestion() {
             const digits = parseInt(settings.difficulty);
             let op = settings.operator;
@@ -223,33 +243,41 @@
                 const ops = ['+', '-', '*', '/'];
                 op = ops[Math.floor(Math.random() * ops.length)];
             }
-
-            let num1 = generateNumber(digits);
-            let num2 = generateNumber(digits);
             
-            let questionText = '';
+            const formatNum = (n) => (n < 0 ? `(${n})` : n);
 
-            switch (op) {
-                case '+':
-                    currentAnswer = num1 + num2;
-                    questionText = `${num1} + ${num2}`;
-                    break;
-                case '-':
-                    if (num1 < num2) [num1, num2] = [num2, num1]; // Ensure positive result
-                    currentAnswer = num1 - num2;
-                    questionText = `${num1} - ${num2}`;
-                    break;
-                case '*':
-                    currentAnswer = num1 * num2;
-                    questionText = `${num1} × ${num2}`;
-                    break;
-                case '/':
-                    // Ensure integer result
-                    const product = num1 * num2;
-                    currentAnswer = num1;
-                    num1 = product;
-                    questionText = `${num1} ÷ ${num2}`;
-                    break;
+            let num1, num2, questionText;
+
+            // For division, stick to positive integers for simplicity
+            if (op === '/') {
+                num1 = generateNumber(digits);
+                num2 = generateNumber(digits);
+                const product = num1 * num2;
+                currentAnswer = num1;
+                num1 = product;
+                questionText = `${num1} ÷ ${num2}`;
+            } else {
+                num1 = generateNumberWithSign(digits);
+                num2 = generateNumberWithSign(digits);
+
+                switch (op) {
+                    case '+':
+                        currentAnswer = num1 + num2;
+                        questionText = `${formatNum(num1)} + ${formatNum(num2)}`;
+                        break;
+                    case '-':
+                        currentAnswer = num1 - num2;
+                        questionText = `${formatNum(num1)} - ${formatNum(num2)}`;
+                        break;
+                    case '*':
+                        // For simplicity on multiplication, let's reduce chance of two negatives
+                        if(digits > 1 && num1 < 0 && num2 < 0){
+                           num2 = -num2; // make one positive
+                        }
+                        currentAnswer = num1 * num2;
+                        questionText = `${formatNum(num1)} × ${formatNum(num2)}`;
+                        break;
+                }
             }
             
             questionEl.textContent = questionText;
@@ -258,19 +286,15 @@
         
         function showFeedback(isCorrect) {
             feedbackEl.textContent = isCorrect ? '○' : '×';
-            feedbackEl.className = 'feedback'; // Reset classes
             feedbackEl.classList.add(isCorrect ? 'correct' : 'incorrect');
             
             setTimeout(() => {
-                 feedbackEl.style.opacity = '0';
-                 setTimeout(() => {
-                    feedbackEl.className = 'feedback';
-                 }, 500)
-            }, 300);
+                 feedbackEl.classList.remove('correct', 'incorrect');
+            }, 500);
         }
 
         function checkAnswer() {
-            if (userAnswer === '') return;
+            if (userAnswer === '' || userAnswer === '-') return;
 
             const isCorrect = parseInt(userAnswer) === currentAnswer;
             
@@ -305,12 +329,10 @@
         }
 
         function startGame() {
-            // Get settings
             settings.difficulty = document.querySelector('input[name="difficulty"]:checked').value;
             settings.operator = document.querySelector('input[name="operator"]:checked').value;
             settings.time = document.querySelector('input[name="time"]:checked').value;
 
-            // Reset state
             timeLeft = parseInt(settings.time);
             questionCount = 1;
             correctCount = 0;
@@ -319,7 +341,7 @@
             questionHistory = [];
 
             generateQuestion();
-            updateTimer(); // Initial display
+            updateTimer();
             timer = setInterval(updateTimer, 1000);
 
             showScreen('game');
@@ -332,11 +354,14 @@
         }
 
         function showResults() {
-            const totalQuestions = questionCount -1;
-            scoreEl.textContent = `${totalQuestions}問中${correctCount}問`;
+            const totalQuestions = questionCount > 1 ? questionCount - 1 : 0;
+            scoreEl.textContent = `${correctCount}問`;
             
             const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
             accuracyEl.textContent = `${accuracy}%`;
+
+            const finalScore = Math.round(correctCount * 100 * (accuracy / 100));
+            finalScoreEl.textContent = finalScore;
 
             let commentText = '';
             if (accuracy >= 90) {
@@ -376,7 +401,11 @@
                 userAnswer = '';
             } else if (key === 'BS') {
                 userAnswer = userAnswer.slice(0, -1);
-            } else if (userAnswer.length < 9) { // Limit input length
+            } else if (key === '-') {
+                if (userAnswer === '') {
+                    userAnswer = '-';
+                }
+            } else if (userAnswer.length < 9) {
                 userAnswer += key;
             }
             answerDisplayEl.textContent = userAnswer;
@@ -392,14 +421,12 @@
         });
 
         submitButton.addEventListener('click', checkAnswer);
-
         retryButton.addEventListener('click', startGame);
-
         backToStartButton.addEventListener('click', () => showScreen('start'));
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active')) {
-                if (e.key >= '0' && e.key <= '9') {
+                if (e.key >= '0' && e.key <= '9' || e.key === '-') {
                     handleKeypadInput(e.key);
                 } else if (e.key === 'Backspace') {
                     handleKeypadInput('BS');
@@ -412,3 +439,4 @@
     </script>
 </body>
 </html>
+
