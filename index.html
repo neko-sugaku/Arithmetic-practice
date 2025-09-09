@@ -287,6 +287,24 @@
             }
             return num;
         }
+        
+        function adjustFontSize(element) {
+            // Reset inline font size to revert to the CSS class size
+            element.style.fontSize = '';
+
+            const container = element.parentElement;
+            // Subtract some padding from the container width for safety margin
+            const containerWidth = container.clientWidth - 16; 
+            
+            // Get initial font size from computed style
+            let currentFontSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+
+            // Check for overflow and reduce font size iteratively
+            while (element.scrollWidth > containerWidth && currentFontSize > 16) { // Set a minimum font size of 16px
+                currentFontSize -= 1; // Decrease by 1px for finer control
+                element.style.fontSize = currentFontSize + 'px';
+            }
+        }
 
 
         function generateQuestion() {
@@ -331,6 +349,7 @@
             }
             
             questionEl.textContent = questionText;
+            adjustFontSize(questionEl);
             questionNumberEl.textContent = `第${questionCount}問`;
         }
         
