@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算数チャレンジゲーム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            touch-action: manipulation;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: flex;
+        }
+        .setting-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .setting-button-group input[type="radio"] {
+            display: none;
+        }
+        .setting-button-group label {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-weight: 700;
+        }
+        .setting-button-group input[type="radio"]:checked + label {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .keypad-btn {
+            transition: all 0.1s ease;
+        }
+        .keypad-btn:active {
+            transform: scale(0.95);
+            background-color: #e2e8f0;
+        }
+        .action-btn {
+             transition: all 0.1s ease;
+        }
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+        .feedback {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10rem;
+            font-weight: 800;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        .feedback.correct {
+            color: #22c55e;
+            opacity: 1;
+        }
+        .feedback.incorrect {
+            color: #ef4444;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+
+    <div class="container mx-auto p-4 max-w-lg w-full">
+        <!-- スタート画面 -->
+        <div id="start-screen" class="screen active flex-col space-y-8 bg-white p-8 rounded-2xl shadow-lg">
+            <h1 class="text-4xl font-extrabold text-center text-blue-600">算数チャレンジ</h1>
+
+            <!-- 難易度設定 -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-bold text-slate-700 text-center">難易度</h2>
+                <div class="setting-button-group" id="difficulty-setting">
+                    <input type="radio" id="diff-1" name="difficulty" value="1" checked><label for="diff-1">1桁</label>
+                    <input type="radio" id="diff-2" name="difficulty" value="2"><label for="diff-2">2桁</label>
+                    <input type="radio" id="diff-3" name="difficulty" value="3"><label for="diff-3">3桁</label>
+                </div>
+            </div>
+
+            <!-- 四則演算設定 -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-bold text-slate-700 text-center">計算の種類</h2>
+                <div class="setting-button-group" id="operator-setting">
+                    <input type="radio" id="op-add" name="operator" value="+"><label for="op-add">＋</label>
+                    <input type="radio" id="op-sub" name="operator" value="-"><label for="op-sub">ー</label>
+                    <input type="radio" id="op-mul" name="operator" value="*"><label for="op-mul">×</label>
+                    <input type="radio" id="op-div" name="operator" value="/"><label for="op-div">÷</label>
+                    <input type="radio" id="op-all" name="operator" value="all" checked><label for="op-all">全て</label>
+                </div>
+            </div>
+
+            <!-- 制限時間設定 -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-bold text-slate-700 text-center">制限時間</h2>
+                <div class="setting-button-group" id="time-setting">
+                    <input type="radio" id="time-30" name="time" value="30"><label for="time-30">30秒</label>
+                    <input type="radio" id="time-60" name="time" value="60" checked><label for="time-60">1分</label>
+                    <input type="radio" id="time-180" name="time" value="180"><label for="time-180">3分</label>
+                    <input type="radio" id="time-300" name="time" value="300"><label for="time-300">5分</label>
+                </div>
+            </div>
+
+            <button id="start-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-xl text-2xl shadow-md action-btn">スタート！</button>
+        </div>
+
+        <!-- ゲーム画面 -->
+        <div id="game-screen" class="screen flex-col space-y-4 bg-white p-6 rounded-2xl shadow-lg relative">
+             <div id="feedback" class="feedback"></div>
+            <div class="flex justify-between items-center">
+                <div id="question-number" class="text-xl font-bold text-slate-600">第1問</div>
+                <div id="timer" class="text-2xl font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-full">1:00</div>
+            </div>
+            <div class="bg-slate-100 p-8 rounded-lg text-center">
+                <div id="question" class="text-6xl font-extrabold text-slate-800">12 + 34</div>
+            </div>
+            <div id="answer-display" class="w-full bg-slate-200 text-right p-4 rounded-lg text-5xl font-bold text-slate-900 min-h-[80px]"></div>
+            
+            <div class="grid grid-cols-3 gap-2">
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="7">7</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="8">8</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="9">9</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="4">4</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="5">5</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="6">6</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="1">1</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="2">2</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="3">3</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="C">C</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="0">0</button>
+                <button class="keypad-btn text-4xl font-bold p-5 bg-slate-100 rounded-lg" data-key="BS">⌫</button>
+            </div>
+            <button id="submit-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-2xl shadow-md action-btn">決定</button>
+        </div>
+
+        <!-- リザルト画面 -->
+        <div id="result-screen" class="screen flex-col space-y-6 bg-white p-8 rounded-2xl shadow-lg text-center">
+            <h1 class="text-4xl font-extrabold text-blue-600">結果発表</h1>
+            <div class="bg-slate-100 p-6 rounded-lg space-y-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-600">正答数</h2>
+                    <p id="score" class="text-4xl font-bold text-slate-800">30問中27問</p>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-600">正答率</h2>
+                    <p id="accuracy" class="text-4xl font-bold text-slate-800">90%</p>
+                </div>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg">
+                 <h2 class="text-lg font-bold text-blue-800 mb-2">コメント</h2>
+                 <p id="comment" class="text-slate-700">非常に高い正答率です。繰り上がりがある問題でミスをしているので気を付けていきましょう！</p>
+            </div>
+            <div class="flex space-x-4">
+                <button id="back-to-start-button" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl text-xl shadow-md action-btn">戻る</button>
+                <button id="retry-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-xl shadow-md action-btn">もう一度</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const screens = {
+            start: document.getElementById('start-screen'),
+            game: document.getElementById('game-screen'),
+            result: document.getElementById('result-screen'),
+        };
+        const startButton = document.getElementById('start-button');
+        const questionNumberEl = document.getElementById('question-number');
+        const timerEl = document.getElementById('timer');
+        const questionEl = document.getElementById('question');
+        const answerDisplayEl = document.getElementById('answer-display');
+        const keypadButtons = document.querySelectorAll('.keypad-btn');
+        const submitButton = document.getElementById('submit-button');
+        const scoreEl = document.getElementById('score');
+        const accuracyEl = document.getElementById('accuracy');
+        const commentEl = document.getElementById('comment');
+        const backToStartButton = document.getElementById('back-to-start-button');
+        const retryButton = document.getElementById('retry-button');
+        const feedbackEl = document.getElementById('feedback');
+
+        // Game State
+        let settings = {};
+        let timer;
+        let timeLeft;
+        let questionCount;
+        let correctCount;
+        let currentAnswer;
+        let userAnswer = '';
+        let questionHistory = [];
+
+        // --- Functions ---
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        function generateNumber(digits) {
+            const min = Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateQuestion() {
+            const digits = parseInt(settings.difficulty);
+            let op = settings.operator;
+            if (op === 'all') {
+                const ops = ['+', '-', '*', '/'];
+                op = ops[Math.floor(Math.random() * ops.length)];
+            }
+
+            let num1 = generateNumber(digits);
+            let num2 = generateNumber(digits);
+            
+            let questionText = '';
+
+            switch (op) {
+                case '+':
+                    currentAnswer = num1 + num2;
+                    questionText = `${num1} + ${num2}`;
+                    break;
+                case '-':
+                    if (num1 < num2) [num1, num2] = [num2, num1]; // Ensure positive result
+                    currentAnswer = num1 - num2;
+                    questionText = `${num1} - ${num2}`;
+                    break;
+                case '*':
+                    currentAnswer = num1 * num2;
+                    questionText = `${num1} × ${num2}`;
+                    break;
+                case '/':
+                    // Ensure integer result
+                    const product = num1 * num2;
+                    currentAnswer = num1;
+                    num1 = product;
+                    questionText = `${num1} ÷ ${num2}`;
+                    break;
+            }
+            
+            questionEl.textContent = questionText;
+            questionNumberEl.textContent = `第${questionCount}問`;
+        }
+        
+        function showFeedback(isCorrect) {
+            feedbackEl.textContent = isCorrect ? '○' : '×';
+            feedbackEl.className = 'feedback'; // Reset classes
+            feedbackEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            setTimeout(() => {
+                 feedbackEl.style.opacity = '0';
+                 setTimeout(() => {
+                    feedbackEl.className = 'feedback';
+                 }, 500)
+            }, 300);
+        }
+
+        function checkAnswer() {
+            if (userAnswer === '') return;
+
+            const isCorrect = parseInt(userAnswer) === currentAnswer;
+            
+            showFeedback(isCorrect);
+            
+            if (isCorrect) {
+                correctCount++;
+            }
+
+            questionHistory.push({
+                question: questionEl.textContent.replace('×', '*').replace('÷', '/'),
+                userAnswer: userAnswer,
+                correctAnswer: currentAnswer,
+                isCorrect: isCorrect
+            });
+
+            questionCount++;
+            userAnswer = '';
+            answerDisplayEl.textContent = '';
+            generateQuestion();
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function startGame() {
+            // Get settings
+            settings.difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+            settings.operator = document.querySelector('input[name="operator"]:checked').value;
+            settings.time = document.querySelector('input[name="time"]:checked').value;
+
+            // Reset state
+            timeLeft = parseInt(settings.time);
+            questionCount = 1;
+            correctCount = 0;
+            userAnswer = '';
+            answerDisplayEl.textContent = '';
+            questionHistory = [];
+
+            generateQuestion();
+            updateTimer(); // Initial display
+            timer = setInterval(updateTimer, 1000);
+
+            showScreen('game');
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            showResults();
+            showScreen('result');
+        }
+
+        function showResults() {
+            const totalQuestions = questionCount -1;
+            scoreEl.textContent = `${totalQuestions}問中${correctCount}問`;
+            
+            const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+            accuracyEl.textContent = `${accuracy}%`;
+
+            let commentText = '';
+            if (accuracy >= 90) {
+                commentText = '素晴らしい成績です！この調子でさらに難しい問題にも挑戦してみましょう！';
+            } else if (accuracy >= 70) {
+                commentText = '良い成績ですね。ケアレスミスをなくせば、もっとスコアが伸びますよ！';
+            } else if (accuracy >= 50) {
+                commentText = 'よく頑張りました。間違えた問題を復習して、苦手な計算を克服しましょう。';
+            } else {
+                commentText = 'お疲れ様でした。まずは簡単なレベルから再挑戦して、自信をつけましょう！';
+            }
+
+            const mistakes = questionHistory.filter(h => !h.isCorrect);
+            if (mistakes.length > 0) {
+                const mistakeTypes = {
+                    '+': 0, '-': 0, '*': 0, '/': 0
+                };
+                mistakes.forEach(m => {
+                    if (m.question.includes('+')) mistakeTypes['+']++;
+                    if (m.question.includes('-')) mistakeTypes['-']++;
+                    if (m.question.includes('*')) mistakeTypes['*']++;
+                    if (m.question.includes('/')) mistakeTypes['/']++;
+                });
+
+                const mostMistakes = Object.keys(mistakeTypes).reduce((a, b) => mistakeTypes[a] > mistakeTypes[b] ? a : b);
+                
+                if(mistakeTypes[mostMistakes] > 0){
+                    const operatorName = {'+':'足し算', '-':'引き算', '*':'掛け算', '/':'割り算'}[mostMistakes];
+                     commentText += `\n特に${operatorName}の問題でミスが多いようです。重点的に練習してみましょう。`;
+                }
+            }
+            commentEl.innerText = commentText;
+        }
+        
+        function handleKeypadInput(key) {
+             if (key === 'C') {
+                userAnswer = '';
+            } else if (key === 'BS') {
+                userAnswer = userAnswer.slice(0, -1);
+            } else if (userAnswer.length < 9) { // Limit input length
+                userAnswer += key;
+            }
+            answerDisplayEl.textContent = userAnswer;
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+
+        keypadButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                handleKeypadInput(button.dataset.key);
+            });
+        });
+
+        submitButton.addEventListener('click', checkAnswer);
+
+        retryButton.addEventListener('click', startGame);
+
+        backToStartButton.addEventListener('click', () => showScreen('start'));
+
+        document.addEventListener('keydown', (e) => {
+            if (screens.game.classList.contains('active')) {
+                if (e.key >= '0' && e.key <= '9') {
+                    handleKeypadInput(e.key);
+                } else if (e.key === 'Backspace') {
+                    handleKeypadInput('BS');
+                } else if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
