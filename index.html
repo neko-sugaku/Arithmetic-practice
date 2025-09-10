@@ -28,7 +28,6 @@
             justify-content: center;
             gap: 0.5rem;
         }
-        .setting-button-group input[type="radio"],
         .setting-button-group input[type="checkbox"] {
             display: none;
         }
@@ -40,7 +39,6 @@
             transition: all 0.2s ease-in-out;
             font-weight: 700;
         }
-        .setting-button-group input[type="radio"]:checked + label,
         .setting-button-group input[type="checkbox"]:checked + label {
             background-image: linear-gradient(to right, #60a5fa, #3b82f6);
             color: white;
@@ -106,73 +104,65 @@
         <!-- スタート画面 -->
         <div id="start-screen" class="screen active flex-col space-y-4 bg-white p-6 rounded-2xl shadow-xl">
             <h1 class="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">計算練習ゲーム</h1>
-
-            <!-- 難易度設定 -->
-            <div class="bg-slate-50 p-3 rounded-lg">
-                <div class="flex justify-center items-center space-x-3">
-                    <!-- Vertical Text -->
-                    <div class="flex flex-col space-y-2 text-xl font-bold text-slate-500 text-center">
-                        <span>難</span>
-                        <span>易</span>
-                        <span>度</span>
-                    </div>
-                    
-                    <!-- Selection Area -->
-                    <div class="flex flex-grow items-start justify-center space-x-4">
-                        <!-- Column 1 -->
-                        <div class="text-center">
-                            <p class="font-semibold mb-2 text-sm sm:text-base">1つ目の数</p>
-                            <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-1">
-                                <input type="radio" id="d1-1" name="difficulty1" value="1" checked><label for="d1-1">1桁</label>
-                                <input type="radio" id="d1-2" name="difficulty1" value="2"><label for="d1-2">2桁</label>
-                                <input type="radio" id="d1-3" name="difficulty1" value="3"><label for="d1-3">3桁</label>
-                            </div>
+            
+            <div class="space-y-4 bg-slate-50 p-4 rounded-lg">
+                <!-- 難易度設定 -->
+                <div class="flex items-center">
+                    <h2 class="text-base font-bold text-slate-700 w-24 text-center shrink-0">難易度</h2>
+                    <div class="flex-grow grid grid-cols-3 gap-2">
+                        <div>
+                            <label for="difficulty1-select" class="block text-sm font-medium text-gray-700 text-center">1つ目の数</label>
+                            <select id="difficulty1-select" class="mt-1 block w-full pl-2 pr-8 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="1" selected>1桁</option>
+                                <option value="2">2桁</option>
+                                <option value="3">3桁</option>
+                            </select>
                         </div>
-
-                        <!-- Column 2 -->
-                        <div class="text-center">
-                            <p class="font-semibold mb-2 text-sm sm:text-base">2つ目の数</p>
-                            <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-2">
-                                <input type="radio" id="d2-1" name="difficulty2" value="1" checked><label for="d2-1">1桁</label>
-                                <input type="radio" id="d2-2" name="difficulty2" value="2"><label for="d2-2">2桁</label>
-                                <input type="radio" id="d2-3" name="difficulty2" value="3"><label for="d2-3">3桁</label>
-                            </div>
+                        <div>
+                            <label for="difficulty2-select" class="block text-sm font-medium text-gray-700 text-center">2つ目の数</label>
+                            <select id="difficulty2-select" class="mt-1 block w-full pl-2 pr-8 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="1" selected>1桁</option>
+                                <option value="2">2桁</option>
+                                <option value="3">3桁</option>
+                            </select>
                         </div>
-                        
-                        <!-- Column 3 -->
-                        <div class="text-center">
-                            <p class="font-semibold mb-2 text-sm sm:text-base">3つ目の数</p>
-                            <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-3">
-                                <input type="radio" id="d3-1" name="difficulty3" value="1"><label for="d3-1">1桁</label>
-                                <input type="radio" id="d3-2" name="difficulty3" value="2"><label for="d3-2">2桁</label>
-                                <input type="radio" id="d3-3" name="difficulty3" value="3"><label for="d3-3">3桁</label>
-                            </div>
+                        <div>
+                            <label for="difficulty3-select" class="block text-sm font-medium text-gray-700 text-center">3つ目の数</label>
+                             <select id="difficulty3-select" class="mt-1 block w-full pl-2 pr-8 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                <option value="none" selected>なし</option>
+                                <option value="1">1桁</option>
+                                <option value="2">2桁</option>
+                                <option value="3">3桁</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 四則演算設定 -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-bold text-slate-700 text-center">計算の種類</h2>
-                <div class="setting-button-group" id="operator-setting">
-                    <input type="checkbox" id="op-add" name="operator-choice" value="+" checked><label for="op-add">＋</label>
-                    <input type="checkbox" id="op-sub" name="operator-choice" value="-" checked><label for="op-sub">ー</label>
-                    <input type="checkbox" id="op-mul" name="operator-choice" value="*" checked><label for="op-mul">×</label>
-                    <input type="checkbox" id="op-div" name="operator-choice" value="/" checked><label for="op-div">÷</label>
+                <!-- 四則演算設定 -->
+                <div class="flex items-center">
+                    <h2 class="text-base font-bold text-slate-700 w-24 text-center shrink-0">計算の種類</h2>
+                    <div class="setting-button-group justify-start" id="operator-setting">
+                        <input type="checkbox" id="op-add" name="operator-choice" value="+" checked><label for="op-add">＋</label>
+                        <input type="checkbox" id="op-sub" name="operator-choice" value="-" checked><label for="op-sub">ー</label>
+                        <input type="checkbox" id="op-mul" name="operator-choice" value="*" checked><label for="op-mul">×</label>
+                        <input type="checkbox" id="op-div" name="operator-choice" value="/" checked><label for="op-div">÷</label>
+                    </div>
+                </div>
+
+                <!-- 制限時間設定 -->
+                <div class="flex items-center">
+                    <h2 class="text-base font-bold text-slate-700 w-24 text-center shrink-0">制限時間</h2>
+                    <div class="flex-grow">
+                        <select id="time-select" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="30" selected>30秒</option>
+                            <option value="60">1分</option>
+                            <option value="180">3分</option>
+                            <option value="300">5分</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <!-- 制限時間設定 -->
-            <div class="space-y-4">
-                <h2 class="text-xl font-bold text-slate-700 text-center">制限時間</h2>
-                <div class="setting-button-group" id="time-setting">
-                    <input type="radio" id="time-30" name="time" value="30" checked><label for="time-30">30秒</label>
-                    <input type="radio" id="time-60" name="time" value="60"><label for="time-60">1分</label>
-                    <input type="radio" id="time-180" name="time" value="180"><label for="time-180">3分</label>
-                    <input type="radio" id="time-300" name="time" value="300"><label for="time-300">5分</label>
-                </div>
-            </div>
 
             <button id="start-button" class="w-full text-white font-bold py-4 px-4 rounded-xl text-2xl action-btn bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">スタート！</button>
         </div>
@@ -269,7 +259,12 @@
         const reviewMistakesButton = document.getElementById('review-mistakes-button');
         const mistakesContainer = document.getElementById('mistakes-container');
         const operatorSettingContainer = document.getElementById('operator-setting');
-        const difficulty3Radios = document.querySelectorAll('input[name="difficulty3"]');
+        
+        // Settings elements
+        const difficulty1Select = document.getElementById('difficulty1-select');
+        const difficulty2Select = document.getElementById('difficulty2-select');
+        const difficulty3Select = document.getElementById('difficulty3-select');
+        const timeSelect = document.getElementById('time-select');
 
 
         // Game State
@@ -440,13 +435,12 @@
         }
 
         function startGame() {
-            settings.difficulty1 = document.querySelector('input[name="difficulty1"]:checked').value;
-            settings.difficulty2 = document.querySelector('input[name="difficulty2"]:checked').value;
-            const checkedDifficulty3 = document.querySelector('input[name="difficulty3"]:checked');
-            settings.difficulty3 = checkedDifficulty3 ? checkedDifficulty3.value : 'none';
+            settings.difficulty1 = difficulty1Select.value;
+            settings.difficulty2 = difficulty2Select.value;
+            settings.difficulty3 = difficulty3Select.value;
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
             settings.operators = Array.from(checkedOperators).map(el => el.value);
-            settings.time = document.querySelector('input[name="time"]:checked').value;
+            settings.time = timeSelect.value;
 
             showScreen('game');
 
@@ -566,18 +560,6 @@
         backToStartButton.addEventListener('click', () => showScreen('start'));
         reviewMistakesButton.addEventListener('click', () => mistakesContainer.classList.toggle('hidden'));
         operatorSettingContainer.addEventListener('change', validateOperatorSelection);
-        
-        difficulty3Radios.forEach(radio => {
-            radio.addEventListener('click', (e) => {
-                if (e.target.dataset.wasChecked === 'true') {
-                    e.target.checked = false;
-                    e.target.dataset.wasChecked = 'false';
-                } else {
-                    difficulty3Radios.forEach(r => r.dataset.wasChecked = 'false');
-                    e.target.dataset.wasChecked = 'true';
-                }
-            });
-        });
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active')) {
@@ -593,5 +575,4 @@
     </script>
 </body>
 </html>
-
 
