@@ -146,7 +146,6 @@
                                 <input type="radio" id="d3-1" name="difficulty3" value="1"><label for="d3-1">1桁</label>
                                 <input type="radio" id="d3-2" name="difficulty3" value="2"><label for="d3-2">2桁</label>
                                 <input type="radio" id="d3-3" name="difficulty3" value="3"><label for="d3-3">3桁</label>
-                                <input type="radio" id="d3-none" name="difficulty3" value="none" checked><label for="d3-none">なし</label>
                             </div>
                         </div>
                     </div>
@@ -270,6 +269,7 @@
         const reviewMistakesButton = document.getElementById('review-mistakes-button');
         const mistakesContainer = document.getElementById('mistakes-container');
         const operatorSettingContainer = document.getElementById('operator-setting');
+        const difficulty3Radios = document.querySelectorAll('input[name="difficulty3"]');
 
 
         // Game State
@@ -442,7 +442,8 @@
         function startGame() {
             settings.difficulty1 = document.querySelector('input[name="difficulty1"]:checked').value;
             settings.difficulty2 = document.querySelector('input[name="difficulty2"]:checked').value;
-            settings.difficulty3 = document.querySelector('input[name="difficulty3"]:checked').value;
+            const checkedDifficulty3 = document.querySelector('input[name="difficulty3"]:checked');
+            settings.difficulty3 = checkedDifficulty3 ? checkedDifficulty3.value : 'none';
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
             settings.operators = Array.from(checkedOperators).map(el => el.value);
             settings.time = document.querySelector('input[name="time"]:checked').value;
@@ -565,6 +566,18 @@
         backToStartButton.addEventListener('click', () => showScreen('start'));
         reviewMistakesButton.addEventListener('click', () => mistakesContainer.classList.toggle('hidden'));
         operatorSettingContainer.addEventListener('change', validateOperatorSelection);
+        
+        difficulty3Radios.forEach(radio => {
+            radio.addEventListener('click', (e) => {
+                if (e.target.dataset.wasChecked === 'true') {
+                    e.target.checked = false;
+                    e.target.dataset.wasChecked = 'false';
+                } else {
+                    difficulty3Radios.forEach(r => r.dataset.wasChecked = 'false');
+                    e.target.dataset.wasChecked = 'true';
+                }
+            });
+        });
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active')) {
@@ -580,5 +593,4 @@
     </script>
 </body>
 </html>
-
 
