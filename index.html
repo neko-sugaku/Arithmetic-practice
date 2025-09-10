@@ -63,7 +63,9 @@
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
         }
         .action-btn:disabled {
-            background: #9ca3af;
+            background-image: none;
+            background-color: #9ca3af;
+            cursor: not-allowed;
         }
         .feedback {
             position: absolute;
@@ -107,7 +109,7 @@
 
             <!-- 難易度設定 -->
             <div class="bg-slate-50 p-3 rounded-lg">
-                <div class="flex justify-center items-center space-x-6">
+                <div class="flex justify-center items-center space-x-3">
                     <!-- Vertical Text -->
                     <div class="flex flex-col space-y-2 text-xl font-bold text-slate-500 text-center">
                         <span>難</span>
@@ -119,7 +121,7 @@
                     <div class="flex flex-grow items-start justify-center space-x-4">
                         <!-- Column 1 -->
                         <div class="text-center">
-                            <p class="font-semibold mb-2">1つ目の数</p>
+                            <p class="font-semibold mb-2 text-sm sm:text-base">1つ目の数</p>
                             <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-1">
                                 <input type="radio" id="d1-1" name="difficulty1" value="1" checked><label for="d1-1">1桁</label>
                                 <input type="radio" id="d1-2" name="difficulty1" value="2"><label for="d1-2">2桁</label>
@@ -127,16 +129,24 @@
                             </div>
                         </div>
 
-                        <!-- Middle "×" -->
-                        <div class="self-center text-3xl font-bold text-slate-400 pt-8">×</div>
-
                         <!-- Column 2 -->
                         <div class="text-center">
-                            <p class="font-semibold mb-2">2つ目の数</p>
+                            <p class="font-semibold mb-2 text-sm sm:text-base">2つ目の数</p>
                             <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-2">
                                 <input type="radio" id="d2-1" name="difficulty2" value="1" checked><label for="d2-1">1桁</label>
                                 <input type="radio" id="d2-2" name="difficulty2" value="2"><label for="d2-2">2桁</label>
                                 <input type="radio" id="d2-3" name="difficulty2" value="3"><label for="d2-3">3桁</label>
+                            </div>
+                        </div>
+                        
+                        <!-- Column 3 -->
+                        <div class="text-center">
+                            <p class="font-semibold mb-2 text-sm sm:text-base">3つ目の数</p>
+                            <div class="setting-button-group flex-col space-y-2" id="difficulty-setting-3">
+                                <input type="radio" id="d3-1" name="difficulty3" value="1"><label for="d3-1">1桁</label>
+                                <input type="radio" id="d3-2" name="difficulty3" value="2"><label for="d3-2">2桁</label>
+                                <input type="radio" id="d3-3" name="difficulty3" value="3"><label for="d3-3">3桁</label>
+                                <input type="radio" id="d3-none" name="difficulty3" value="none" checked><label for="d3-none">なし</label>
                             </div>
                         </div>
                     </div>
@@ -296,59 +306,88 @@
         }
         
         function adjustFontSize(element) {
-            // Reset inline font size to revert to the CSS class size
             element.style.fontSize = '';
-
             const container = element.parentElement;
-            // Subtract some padding from the container width for safety margin
             const containerWidth = container.clientWidth - 16; 
-            
-            // Get initial font size from computed style
             let currentFontSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
-
-            // Check for overflow and reduce font size iteratively
-            while (element.scrollWidth > containerWidth && currentFontSize > 16) { // Set a minimum font size of 16px
-                currentFontSize -= 1; // Decrease by 1px for finer control
+            while (element.scrollWidth > containerWidth && currentFontSize > 16) {
+                currentFontSize -= 1;
                 element.style.fontSize = currentFontSize + 'px';
             }
         }
 
 
         function generateQuestion() {
-            const digits1 = parseInt(settings.difficulty1);
-            const digits2 = parseInt(settings.difficulty2);
-
-            const availableOps = settings.operators;
-            let op = availableOps[Math.floor(Math.random() * availableOps.length)];
-            
             const formatNum = (n) => (n < 0 ? `(${n})` : n);
+            let questionText;
 
-            let num1, num2, questionText;
+            if (settings.difficulty3 !== 'none') {
+                // Logic for 3 numbers
+                const digits1 = parseInt(settings.difficulty1);
+                const digits2 = parseInt(settings.difficulty2);
+                const digits3 = parseInt(settings.difficulty3);
+                const availableOps = settings.operators;
 
-            if (op === '/') {
-                // Ensure integer result by generating the answer first
-                num2 = generateNumber(digits2);
-                if (num2 === 0) num2 = 1; // Avoid division by zero
-                currentAnswer = generateNumber(digits1);
-                num1 = currentAnswer * num2;
-                questionText = `${num1} ÷ ${num2}`;
+                let num1, num2, num3, op1, op2, calcText;
+                let tempAnswer;
+                let attempt = 0;
+
+                do {
+                    num1 = generateNumberWithSign(digits1);
+                    num2 = generateNumberWithSign(digits2);
+                    num3 = generateNumberWithSign(digits3);
+                    op1 = availableOps[Math.floor(Math.random() * availableOps.length)];
+                    op2 = availableOps[Math.floor(Math.random() * availableOps.length)];
+
+                    if ((op1 === '/' && num2 === 0) || (op2 === '/' && num3 === 0)) {
+                        tempAnswer = NaN; continue;
+                    }
+                    
+                    calcText = `${num1} ${op1} ${num2} ${op2} ${num3}`;
+                    
+                    try {
+                        tempAnswer = eval(calcText);
+                    } catch (e) {
+                        tempAnswer = NaN;
+                    }
+
+                    attempt++;
+                    if (attempt > 50) { 
+                        num1 = 1; num2 = 2; num3 = 3; op1 = '+'; op2 = '+';
+                        calcText = '1+2+3'; tempAnswer = 6;
+                        break;
+                    }
+
+                } while (!Number.isInteger(tempAnswer));
+
+                currentAnswer = tempAnswer;
+                const displayOp1 = op1 === '*' ? '×' : op1 === '/' ? '÷' : op1;
+                const displayOp2 = op2 === '*' ? '×' : op2 === '/' ? '÷' : op2;
+                questionText = `${formatNum(num1)} ${displayOp1} ${formatNum(num2)} ${displayOp2} ${formatNum(num3)}`;
+
             } else {
-                num1 = generateNumberWithSign(digits1);
-                num2 = generateNumberWithSign(digits2);
+                // Logic for 2 numbers
+                const digits1 = parseInt(settings.difficulty1);
+                const digits2 = parseInt(settings.difficulty2);
+                const availableOps = settings.operators;
+                let op = availableOps[Math.floor(Math.random() * availableOps.length)];
+                let num1, num2;
 
-                switch (op) {
-                    case '+':
-                        currentAnswer = num1 + num2;
-                        questionText = `${formatNum(num1)} + ${formatNum(num2)}`;
-                        break;
-                    case '-':
-                        currentAnswer = num1 - num2;
-                        questionText = `${formatNum(num1)} - ${formatNum(num2)}`;
-                        break;
-                    case '*':
-                        currentAnswer = num1 * num2;
-                        questionText = `${formatNum(num1)} × ${formatNum(num2)}`;
-                        break;
+                if (op === '/') {
+                    num2 = generateNumber(digits2);
+                    if (num2 === 0) num2 = 1;
+                    currentAnswer = generateNumber(digits1);
+                    num1 = currentAnswer * num2;
+                    questionText = `${num1} ÷ ${num2}`;
+                } else {
+                    num1 = generateNumberWithSign(digits1);
+                    num2 = generateNumberWithSign(digits2);
+
+                    switch (op) {
+                        case '+': currentAnswer = num1 + num2; questionText = `${formatNum(num1)} + ${formatNum(num2)}`; break;
+                        case '-': currentAnswer = num1 - num2; questionText = `${formatNum(num1)} - ${formatNum(num2)}`; break;
+                        case '*': currentAnswer = num1 * num2; questionText = `${formatNum(num1)} × ${formatNum(num2)}`; break;
+                    }
                 }
             }
             
@@ -362,7 +401,6 @@
         function showFeedback(isCorrect) {
             feedbackEl.textContent = isCorrect ? '○' : '×';
             feedbackEl.classList.add(isCorrect ? 'correct' : 'incorrect');
-            
             setTimeout(() => {
                  feedbackEl.classList.remove('correct', 'incorrect');
             }, 500);
@@ -370,14 +408,9 @@
 
         function checkAnswer() {
             if (userAnswer === '' || userAnswer === '-') return;
-
             const isCorrect = parseInt(userAnswer) === currentAnswer;
-            
             showFeedback(isCorrect);
-            
-            if (isCorrect) {
-                correctCount++;
-            }
+            if (isCorrect) correctCount++;
 
             questionHistory.push({
                 question: questionEl.textContent.replace('×', '*').replace('÷', '/'),
@@ -403,32 +436,35 @@
             } else {
                 timerEl.classList.remove('text-red-500', 'font-bold');
             }
-
-            if (timeLeft <= 0) {
-                endGame();
-            }
+            if (timeLeft <= 0) endGame();
         }
 
         function startGame() {
             settings.difficulty1 = document.querySelector('input[name="difficulty1"]:checked').value;
             settings.difficulty2 = document.querySelector('input[name="difficulty2"]:checked').value;
+            settings.difficulty3 = document.querySelector('input[name="difficulty3"]:checked').value;
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
             settings.operators = Array.from(checkedOperators).map(el => el.value);
             settings.time = document.querySelector('input[name="time"]:checked').value;
 
-            showScreen('game'); // Show screen first to get element dimensions
+            showScreen('game');
 
-            // Calculate font size once based on the longest possible question string
             const maxDigits1 = parseInt(settings.difficulty1);
             const maxDigits2 = parseInt(settings.difficulty2);
-            // Create a worst-case string like "(-999) + (-999)"
             const placeholder1 = '(-' + '9'.repeat(maxDigits1) + ')';
             const placeholder2 = '(-' + '9'.repeat(maxDigits2) + ')';
-            const dummyText = `${placeholder1} + ${placeholder2}`;
             
-            questionEl.textContent = dummyText; // Temporarily set the text
-            adjustFontSize(questionEl); // Calculate the appropriate font size
-            calculatedFontSize = questionEl.style.fontSize; // Store the calculated size
+            let dummyText = `${placeholder1} + ${placeholder2}`;
+
+            if (settings.difficulty3 !== 'none') {
+                const maxDigits3 = parseInt(settings.difficulty3);
+                const placeholder3 = '(-' + '9'.repeat(maxDigits3) + ')';
+                dummyText = `${placeholder1} * ${placeholder2} + ${placeholder3}`;
+            }
+            
+            questionEl.textContent = dummyText;
+            adjustFontSize(questionEl);
+            calculatedFontSize = questionEl.style.fontSize;
 
             timeLeft = parseInt(settings.time);
             questionCount = 1;
@@ -438,7 +474,7 @@
             questionHistory = [];
 
             generateQuestion();
-            updateTimer(); // Call once to set initial time and color
+            updateTimer();
             timer = setInterval(updateTimer, 1000);
         }
 
@@ -449,29 +485,22 @@
         }
         
         function populateMistakesList() {
-            mistakesContainer.innerHTML = ''; // Clear previous results
+            mistakesContainer.innerHTML = '';
             const mistakes = questionHistory.filter(h => !h.isCorrect);
-
             if (mistakes.length === 0) {
                 mistakesSection.classList.add('hidden');
                 return;
             }
-            
             mistakesSection.classList.remove('hidden');
-            mistakesContainer.classList.add('hidden'); // Hide list initially
+            mistakesContainer.classList.add('hidden');
             reviewMistakesButton.textContent = `間違えた${mistakes.length}問のふりかえり`;
-
-
             mistakes.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'mistake-item';
-                
                 const questionText = m.question.replace('*', '×').replace('/', '÷');
-                
                 item.innerHTML = `
                     <div class="font-semibold text-slate-700">${questionText} = ${m.correctAnswer}</div>
-                    <div class="text-right"><span class="text-red-500 font-bold">${m.userAnswer}</span> と解答</div>
-                `;
+                    <div class="text-right"><span class="text-red-500 font-bold">${m.userAnswer}</span> と解答</div>`;
                 mistakesContainer.appendChild(item);
             });
         }
@@ -479,24 +508,17 @@
         function showResults() {
             const totalQuestions = questionCount > 1 ? questionCount - 1 : 0;
             scoreEl.textContent = `${correctCount}問`;
-            
             const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
             accuracyEl.textContent = `${accuracy}%`;
-
             const finalScore = Math.round(correctCount * 100 * (accuracy / 100));
             finalScoreEl.textContent = finalScore;
 
             let commentText = '';
-            if (accuracy >= 90) {
-                commentText = '素晴らしい成績です！この調子でさらに難しい問題にも挑戦してみましょう！';
-            } else if (accuracy >= 70) {
-                commentText = '良い成績ですね。ケアレスミスをなくせば、もっとスコアが伸びますよ！';
-            } else if (accuracy >= 50) {
-                commentText = 'よく頑張りました。間違えた問題を復習して、苦手な計算を克服しましょう。';
-            } else {
-                commentText = 'お疲れ様でした。まずは簡単なレベルから再挑戦して、自信をつけましょう！';
-            }
-
+            if (accuracy >= 90) commentText = '素晴らしい成績です！この調子でさらに難しい問題にも挑戦してみましょう！';
+            else if (accuracy >= 70) commentText = '良い成績ですね。ケアレスミスをなくせば、もっとスコアが伸びますよ！';
+            else if (accuracy >= 50) commentText = 'よく頑張りました。間違えた問題を復習して、苦手な計算を克服しましょう。';
+            else commentText = 'お疲れ様でした。まずは簡単なレベルから再挑戦して、自信をつけましょう！';
+            
             const mistakes = questionHistory.filter(h => !h.isCorrect);
             if (mistakes.length > 0) {
                 const mistakeTypes = {'+': 0, '-': 0, '*': 0, '/': 0};
@@ -506,73 +528,57 @@
                     if (m.question.includes('*')) mistakeTypes['*']++;
                     if (m.question.includes('/')) mistakeTypes['/']++;
                 });
-
                 const mostMistakes = Object.keys(mistakeTypes).reduce((a, b) => mistakeTypes[a] > mistakeTypes[b] ? a : b);
-                
                 if(mistakeTypes[mostMistakes] > 0){
                     const operatorName = {'+':'足し算', '-':'引き算', '*':'掛け算', '/':'割り算'}[mostMistakes];
                      commentText += `\n特に${operatorName}の問題でミスが多いようです。重点的に練習してみましょう。`;
                 }
             }
             commentEl.innerText = commentText;
-            
             populateMistakesList();
         }
         
         function handleKeypadInput(key) {
-             if (key === 'C') { // Though button is removed, keep for potential keyboard use
-                userAnswer = '';
-            } else if (key === 'BS') {
-                userAnswer = userAnswer.slice(0, -1);
-            } else if (key === '-') {
-                if (userAnswer === '') {
-                    userAnswer = '-';
-                }
-            } else if (userAnswer.length < 9) {
-                userAnswer += key;
-            }
-            answerDisplayEl.textContent = userAnswer;
+             if (key === 'C') userAnswer = '';
+             else if (key === 'BS') userAnswer = userAnswer.slice(0, -1);
+             else if (key === '-') { if (userAnswer === '') userAnswer = '-'; } 
+             else if (userAnswer.length < 9) userAnswer += key;
+             answerDisplayEl.textContent = userAnswer;
         }
 
         function validateOperatorSelection() {
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
             if (checkedOperators.length === 0) {
                 startButton.disabled = true;
-                startButton.classList.add('opacity-50', 'cursor-not-allowed');
+                startButton.style.backgroundImage = 'none';
             } else {
                 startButton.disabled = false;
-                startButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                startButton.style.backgroundImage = '';
             }
         }
 
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
-        keypadButtons.forEach(button => {
-            button.addEventListener('click', () => handleKeypadInput(button.dataset.key));
-        });
+        keypadButtons.forEach(button => button.addEventListener('click', () => handleKeypadInput(button.dataset.key)));
         submitButton.addEventListener('click', checkAnswer);
         retryButton.addEventListener('click', startGame);
         backToStartButton.addEventListener('click', () => showScreen('start'));
-        
-        reviewMistakesButton.addEventListener('click', () => {
-            mistakesContainer.classList.toggle('hidden');
-        });
-
+        reviewMistakesButton.addEventListener('click', () => mistakesContainer.classList.toggle('hidden'));
         operatorSettingContainer.addEventListener('change', validateOperatorSelection);
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active')) {
-                e.preventDefault(); // Prevent default browser actions for keys
-                if (e.key >= '0' && e.key <= '9' || e.key === '-') {
-                    handleKeypadInput(e.key);
-                } else if (e.key === 'Backspace') {
-                    handleKeypadInput('BS');
-                } else if (e.key === 'Enter') {
-                    checkAnswer();
-                }
+                e.preventDefault();
+                if ((e.key >= '0' && e.key <= '9') || e.key === '-') handleKeypadInput(e.key);
+                else if (e.key === 'Backspace') handleKeypadInput('BS');
+                else if (e.key === 'Enter') checkAnswer();
             }
         });
+
+        // Initial check for operator selection
+        validateOperatorSelection();
     </script>
 </body>
 </html>
+
 
