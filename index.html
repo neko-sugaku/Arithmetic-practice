@@ -45,10 +45,10 @@
             border-color: #3b82f6;
             transform: scale(1.05);
         }
-        .keypad-btn {
+        .keypad-btn, .choice-btn {
             transition: all 0.1s ease;
         }
-        .keypad-btn:active {
+        .keypad-btn:active, .choice-btn:active {
             transform: scale(0.95);
             background-color: #e2e8f0;
         }
@@ -96,6 +96,14 @@
          .mistake-item:last-child {
             border-bottom: none;
         }
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 1.1em;
+        }
+        .fraction > span { display: block; }
+        .fraction span.bottom { border-top: 2px solid currentColor; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
@@ -146,6 +154,8 @@
                         <input type="checkbox" id="op-sub" name="operator-choice" value="-" checked><label for="op-sub">ー</label>
                         <input type="checkbox" id="op-mul" name="operator-choice" value="*" checked><label for="op-mul">×</label>
                         <input type="checkbox" id="op-div" name="operator-choice" value="/" checked><label for="op-div">÷</label>
+                        <input type="checkbox" id="op-decimal" name="number-type"><label for="op-decimal">小数</label>
+                        <input type="checkbox" id="op-fraction" name="number-type"><label for="op-fraction">分数</label>
                     </div>
                 </div>
 
@@ -174,26 +184,41 @@
                 <div id="question-number" class="text-xl font-bold text-slate-600">第1問</div>
                 <div id="timer" class="text-2xl font-bold text-blue-600 bg-blue-100 px-4 py-2 rounded-full transition-colors duration-300">0:30</div>
             </div>
-            <div class="bg-slate-100 p-4 rounded-lg text-center">
-                <div id="question" class="text-5xl font-extrabold text-slate-800 break-all">12 + 34</div>
+            <div class="bg-slate-100 p-4 rounded-lg text-center flex items-center justify-center min-h-[100px]">
+                <div id="question" class="text-5xl font-extrabold text-slate-800 break-all"></div>
             </div>
-            <div id="answer-display" class="w-full bg-slate-200 text-right p-2 rounded-lg text-4xl font-bold text-slate-900 min-h-[64px]"></div>
             
-            <div class="grid grid-cols-3 gap-2">
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="7">7</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="8">8</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="9">9</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="4">4</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="5">5</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="6">6</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="1">1</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="2">2</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="3">3</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="-">-</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="0">0</button>
-                <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg text-orange-500" data-key="BS">⌫</button>
+            <div id="input-mode-area">
+                <div class="flex items-center gap-2">
+                    <div id="answer-display" class="flex-grow w-full bg-slate-200 text-right p-2 rounded-lg text-4xl font-bold text-slate-900 min-h-[64px]"></div>
+                    <button id="backspace-btn" class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg text-orange-500 h-[64px] w-auto flex items-center justify-center aspect-square">⌫</button>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="7">7</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="8">8</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="9">9</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="4">4</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="5">5</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="6">6</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="1">1</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="2">2</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="3">3</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="-">-</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key="0">0</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg" data-key=".">.</button>
+                </div>
+                <button id="submit-button" class="w-full text-white font-bold py-4 px-4 rounded-xl text-2xl action-btn bg-gradient-to-br from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 mt-2">決定</button>
             </div>
-            <button id="submit-button" class="w-full text-white font-bold py-4 px-4 rounded-xl text-2xl action-btn bg-gradient-to-br from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 mt-2">決定</button>
+
+            <div id="choice-mode-area" class="hidden">
+                 <div class="grid grid-cols-2 gap-3 mt-4">
+                    <button class="choice-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg"></button>
+                    <button class="choice-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg"></button>
+                    <button class="choice-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg"></button>
+                    <button class="choice-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg"></button>
+                </div>
+            </div>
         </div>
 
         <!-- リザルト画面 -->
@@ -247,6 +272,7 @@
         const questionEl = document.getElementById('question');
         const answerDisplayEl = document.getElementById('answer-display');
         const keypadButtons = document.querySelectorAll('.keypad-btn');
+        const backspaceBtn = document.getElementById('backspace-btn');
         const submitButton = document.getElementById('submit-button');
         const scoreEl = document.getElementById('score');
         const accuracyEl = document.getElementById('accuracy');
@@ -259,12 +285,17 @@
         const reviewMistakesButton = document.getElementById('review-mistakes-button');
         const mistakesContainer = document.getElementById('mistakes-container');
         const operatorSettingContainer = document.getElementById('operator-setting');
+        const inputModeArea = document.getElementById('input-mode-area');
+        const choiceModeArea = document.getElementById('choice-mode-area');
+        const choiceButtons = choiceModeArea.querySelectorAll('.choice-btn');
         
         // Settings elements
         const difficulty1Select = document.getElementById('difficulty1-select');
         const difficulty2Select = document.getElementById('difficulty2-select');
         const difficulty3Select = document.getElementById('difficulty3-select');
         const timeSelect = document.getElementById('time-select');
+        const opDecimalCheckbox = document.getElementById('op-decimal');
+        const opFractionCheckbox = document.getElementById('op-fraction');
 
 
         // Game State
@@ -274,6 +305,7 @@
         let questionCount;
         let correctCount;
         let currentAnswer;
+        let preciseCurrentAnswer;
         let userAnswer = '';
         let questionHistory = [];
         let calculatedFontSize = '';
@@ -284,24 +316,62 @@
             Object.values(screens).forEach(screen => screen.classList.remove('active'));
             screens[screenName].classList.add('active');
         }
+        
+        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
 
         function generateNumber(digits) {
-            if (digits == 1) return Math.floor(Math.random() * 10); // 0-9
+            if (digits == 1) return Math.floor(Math.random() * 10);
             const min = Math.pow(10, digits - 1);
             const max = Math.pow(10, digits) - 1;
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function generateNumberWithSign(digits) {
-            let num = generateNumber(digits);
-            if (Math.random() < 0.4) { // 40% chance of being negative
-                return -num;
-            }
-            return num;
+        function generateDecimal(digits) {
+            const decimalPlaces = Math.floor(Math.random() * digits) + 1;
+            const maxInt = Math.pow(10, digits);
+            const integerPart = Math.floor(Math.random() * maxInt);
+            const decimalPartRaw = Math.floor(Math.random() * (Math.pow(10, decimalPlaces) - 1)) + 1;
+            const result = integerPart + decimalPartRaw / Math.pow(10, decimalPlaces);
+            return parseFloat(result.toFixed(decimalPlaces));
         }
         
+        function generateFraction(digits) {
+            const maxVal = Math.pow(10, digits);
+            let num = Math.floor(Math.random() * maxVal) + 1;
+            let den = Math.floor(Math.random() * (maxVal -1)) + 2; // Denominator > 1
+            const commonDivisor = gcd(num, den);
+            return { num: num / commonDivisor, den: den / commonDivisor };
+        }
+
+        function generateNumberWithOptions(digits) {
+            if (settings.useFractions) {
+                return generateFraction(digits);
+            }
+            if (!settings.useDecimals || Math.random() > 0.5) {
+                let num = generateNumber(digits);
+                return (Math.random() < 0.4) ? -num : num;
+            } else {
+                let num = generateDecimal(digits);
+                return (Math.random() < 0.4) ? -num : num;
+            }
+        }
+        
+        function isValidForDigits(num, digits) {
+            if (num === null || num === undefined || !isFinite(num)) return false;
+            const absNum = Math.abs(num);
+            const integerPart = Math.floor(absNum);
+            if (integerPart >= Math.pow(10, digits)) return false;
+            if (settings.useDecimals) {
+                const decimalPart = (absNum.toString().split('.')[1] || '');
+                if (decimalPart.length > digits) return false;
+            } else {
+                if (absNum !== integerPart) return false;
+            }
+            return true;
+        }
+
         function adjustFontSize(element) {
-            element.style.fontSize = '';
+            element.style.fontSize = ''; // Resets to CSS default
             const container = element.parentElement;
             const containerWidth = container.clientWidth - 16; 
             let currentFontSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
@@ -310,58 +380,105 @@
                 element.style.fontSize = currentFontSize + 'px';
             }
         }
-
+        
+        function formatFractionHTML(fraction) {
+            if (typeof fraction === 'string') {
+                 const parts = fraction.split('/');
+                 if(parts.length === 2) {
+                    return `<div class="fraction"><span>${parts[0]}</span><span class="bottom">${parts[1]}</span></div>`;
+                 }
+                 return fraction;
+            }
+            if (fraction.den === 1) return `${fraction.num}`;
+            return `<div class="fraction"><span>${fraction.num}</span><span class="bottom">${fraction.den}</span></div>`;
+        }
 
         function generateQuestion() {
             const formatNum = (n) => (n < 0 ? `(${n})` : n);
+            
+            if (settings.useFractions) {
+                questionEl.style.fontSize = ''; // Reset font size for fraction mode
+                generateFractionQuestion();
+                return;
+            }
+             
+            // FONT SIZE CALCULATION (only for the first question in non-fraction mode)
+            if (questionCount === 1 && !calculatedFontSize) {
+                const maxDigits1 = parseInt(settings.difficulty1);
+                const maxDigits2 = parseInt(settings.difficulty2);
+                let p1_decimal = '', p2_decimal = '';
+                if (settings.useDecimals) {
+                    p1_decimal = '.' + '9'.repeat(maxDigits1);
+                    p2_decimal = '.' + '9'.repeat(maxDigits2);
+                }
+                const placeholder1 = '(-' + '9'.repeat(maxDigits1) + p1_decimal + ')';
+                const placeholder2 = '(-' + '9'.repeat(maxDigits2) + p2_decimal + ')';
+                
+                let dummyText = `${placeholder1} + ${placeholder2}`;
+
+                if (settings.difficulty3 !== 'none') {
+                    const maxDigits3 = parseInt(settings.difficulty3);
+                    let p3_decimal = '';
+                    if (settings.useDecimals) p3_decimal = '.' + '9'.repeat(maxDigits3);
+                    const placeholder3 = '(-' + '9'.repeat(maxDigits3) + p3_decimal + ')';
+                    dummyText = `${placeholder1} * ${placeholder2} + ${placeholder3}`;
+                }
+                
+                questionEl.textContent = dummyText;
+                adjustFontSize(questionEl);
+                calculatedFontSize = questionEl.style.fontSize;
+            }
+
             let questionText;
+            let tempAnswer;
+            const maxDP = settings.useDecimals ? parseInt(settings.difficulty1) : 0;
 
             if (settings.difficulty3 !== 'none') {
-                // Logic for 3 numbers
                 const digits1 = parseInt(settings.difficulty1);
                 const digits2 = parseInt(settings.difficulty2);
                 const digits3 = parseInt(settings.difficulty3);
                 const availableOps = settings.operators;
 
                 let num1, num2, num3, op1, op2, calcText;
-                let tempAnswer;
                 let attempt = 0;
+                let isValid = false;
 
                 do {
-                    num1 = generateNumberWithSign(digits1);
-                    num2 = generateNumberWithSign(digits2);
-                    num3 = generateNumberWithSign(digits3);
+                    num1 = generateNumberWithOptions(digits1);
+                    num2 = generateNumberWithOptions(digits2);
+                    num3 = generateNumberWithOptions(digits3);
                     op1 = availableOps[Math.floor(Math.random() * availableOps.length)];
                     op2 = availableOps[Math.floor(Math.random() * availableOps.length)];
 
                     if ((op1 === '/' && num2 === 0) || (op2 === '/' && num3 === 0)) {
-                        tempAnswer = NaN; continue;
+                        attempt++; continue;
                     }
                     
                     calcText = `${num1} ${op1} ${num2} ${op2} ${num3}`;
                     
-                    try {
-                        tempAnswer = eval(calcText);
-                    } catch (e) {
-                        tempAnswer = NaN;
-                    }
+                    try { tempAnswer = eval(calcText); } catch (e) { tempAnswer = NaN; }
+                    
+                    preciseCurrentAnswer = tempAnswer;
+                    isValid = isValidForDigits(num1, digits1) &&
+                              isValidForDigits(num2, digits2) &&
+                              isValidForDigits(num3, digits3) &&
+                              isValidForDigits(tempAnswer, Math.max(digits1, digits2, digits3));
 
                     attempt++;
-                    if (attempt > 50) { 
-                        num1 = 1; num2 = 2; num3 = 3; op1 = '+'; op2 = '+';
-                        calcText = '1+2+3'; tempAnswer = 6;
-                        break;
-                    }
+                } while ((isNaN(tempAnswer) || !isValid) && attempt < 200);
 
-                } while (!Number.isInteger(tempAnswer));
-
-                currentAnswer = tempAnswer;
+                if (attempt >= 200) {
+                    num1 = 5; num2 = 2; num3 = 1; op1 = '*'; op2 = '+';
+                    tempAnswer = num1 * num2 + num3;
+                    preciseCurrentAnswer = tempAnswer;
+                }
+                
+                currentAnswer = parseFloat(tempAnswer.toFixed(maxDP));
                 const displayOp1 = op1 === '*' ? '×' : op1 === '/' ? '÷' : op1;
                 const displayOp2 = op2 === '*' ? '×' : op2 === '/' ? '÷' : op2;
                 questionText = `${formatNum(num1)} ${displayOp1} ${formatNum(num2)} ${displayOp2} ${formatNum(num3)}`;
 
             } else {
-                // Logic for 2 numbers
                 const digits1 = parseInt(settings.difficulty1);
                 const digits2 = parseInt(settings.difficulty2);
                 const availableOps = settings.operators;
@@ -369,27 +486,144 @@
                 let num1, num2;
 
                 if (op === '/') {
-                    num2 = generateNumber(digits2);
-                    if (num2 === 0) num2 = 1;
-                    currentAnswer = generateNumber(digits1);
-                    num1 = currentAnswer * num2;
-                    questionText = `${num1} ÷ ${num2}`;
-                } else {
-                    num1 = generateNumberWithSign(digits1);
-                    num2 = generateNumberWithSign(digits2);
+                    let attempt = 0;
+                    let isValid = false;
+                    do {
+                        num2 = generateNumberWithOptions(digits2);
+                        if (num2 === 0 || !isValidForDigits(num2, digits2)) {
+                            attempt++; continue;
+                        }
 
-                    switch (op) {
-                        case '+': currentAnswer = num1 + num2; questionText = `${formatNum(num1)} + ${formatNum(num2)}`; break;
-                        case '-': currentAnswer = num1 - num2; questionText = `${formatNum(num1)} - ${formatNum(num2)}`; break;
-                        case '*': currentAnswer = num1 * num2; questionText = `${formatNum(num1)} × ${formatNum(num2)}`; break;
+                        let tempAnswerInt = generateNumber(digits1);
+                        let divisors = [1];
+                        if (settings.useDecimals) {
+                           for(let i = 1; i <= digits1; i++) { divisors.push(Math.pow(10, i)); }
+                        }
+                        const answerDivisor = divisors[Math.floor(Math.random() * divisors.length)];
+                        tempAnswer = tempAnswerInt / answerDivisor;
+                        if (Math.random() < 0.3) tempAnswer = -tempAnswer;
+                        
+                        if (!isValidForDigits(tempAnswer, digits1)) {
+                            attempt++; continue;
+                        }
+
+                        num1 = tempAnswer * num2;
+                        isValid = isValidForDigits(num1, digits1);
+                        
+                        attempt++;
+                    } while (!isValid && attempt < 200);
+                    
+                    if (attempt >= 200) {
+                        tempAnswer = settings.useDecimals ? 2.5 : 4;
+                        num2 = 2;
+                        num1 = tempAnswer * num2;
                     }
+                    
+                    preciseCurrentAnswer = tempAnswer;
+                    currentAnswer = tempAnswer;
+                    
+                    const dpAnswer = (Math.abs(currentAnswer).toString().split('.')[1] || '').length;
+                    const dpNum2 = (Math.abs(num2).toString().split('.')[1] || '').length;
+                    const totalDP = dpAnswer + dpNum2;
+                    if (totalDP > 0) {
+                        num1 = parseFloat(num1.toFixed(totalDP > 12 ? 12 : totalDP));
+                    }
+                    questionText = `${formatNum(num1)} ÷ ${formatNum(num2)}`;
+                } else {
+                    let attempt = 0;
+                    let isValid = false;
+                    do {
+                        num1 = generateNumberWithOptions(digits1);
+                        num2 = generateNumberWithOptions(digits2);
+
+                        switch (op) {
+                            case '+': tempAnswer = num1 + num2; break;
+                            case '-': tempAnswer = num1 - num2; break;
+                            case '*': tempAnswer = num1 * num2; break;
+                        }
+                        
+                        preciseCurrentAnswer = tempAnswer;
+                        isValid = isValidForDigits(num1, digits1) &&
+                                  isValidForDigits(num2, digits2) &&
+                                  isValidForDigits(tempAnswer, digits1);
+                        
+                        attempt++;
+                    } while (!isValid && attempt < 200);
+
+                    if (attempt >= 200) {
+                        num1 = 1; num2 = 2; op = '+';
+                        tempAnswer = num1 + num2;
+                        preciseCurrentAnswer = tempAnswer;
+                    }
+
+                    const displayOp = op === '*' ? '×' : op;
+                    questionText = `${formatNum(num1)} ${displayOp} ${formatNum(num2)}`;
+                    currentAnswer = parseFloat(tempAnswer.toFixed(maxDP));
                 }
             }
             
-            questionEl.textContent = questionText;
+            questionEl.innerHTML = questionText;
             if (calculatedFontSize) {
                 questionEl.style.fontSize = calculatedFontSize;
             }
+            questionNumberEl.textContent = `第${questionCount}問`;
+        }
+        
+        function generateFractionQuestion() {
+            const digits1 = parseInt(settings.difficulty1);
+            const digits2 = parseInt(settings.difficulty2);
+            const availableOps = settings.operators.filter(op => ['+', '-', '*', '/'].includes(op));
+            const op = availableOps[Math.floor(Math.random() * availableOps.length)];
+
+            let f1, f2, ans;
+            do {
+                f1 = generateFraction(digits1);
+                f2 = generateFraction(digits2);
+
+                switch(op) {
+                    case '+': ans = { num: f1.num * f2.den + f2.num * f1.den, den: f1.den * f2.den }; break;
+                    case '-': ans = { num: f1.num * f2.den - f2.num * f1.den, den: f1.den * f2.den }; break;
+                    case '*': ans = { num: f1.num * f2.num, den: f1.den * f2.den }; break;
+                    case '/': ans = { num: f1.num * f2.den, den: f1.den * f2.num }; break;
+                }
+            } while (ans.den === 0);
+            
+            const commonDivisor = gcd(Math.abs(ans.num), Math.abs(ans.den));
+            const simplifiedAns = { num: ans.num / commonDivisor, den: ans.den / commonDivisor };
+            
+            if (simplifiedAns.den < 0) { // Keep denominator positive
+                simplifiedAns.den *= -1;
+                simplifiedAns.num *= -1;
+            }
+
+            currentAnswer = simplifiedAns.den === 1 ? `${simplifiedAns.num}` : `${simplifiedAns.num}/${simplifiedAns.den}`;
+            
+            const displayOp = op === '*' ? '×' : op === '/' ? '÷' : op;
+            questionEl.innerHTML = `${formatFractionHTML(f1)} ${displayOp} ${formatFractionHTML(f2)}`;
+            
+            // Generate choices
+            const choices = new Set([currentAnswer]);
+            
+            if (op === '+') choices.add(`${f1.num + f2.num}/${f1.den + f2.den}`);
+            if (op === '-') choices.add(`${f1.num - f2.num}/${f1.den - f2.den}`);
+
+            if (commonDivisor !== 1) choices.add(`${ans.num}/${ans.den}`);
+
+            if (op === '/') choices.add(`${f1.num * f2.num}/${f1.den * f2.den}`);
+
+            while(choices.size < 4) {
+                 const wrongNum = simplifiedAns.num + (Math.random() < 0.5 ? 1 : -1);
+                 const wrongDen = simplifiedAns.den;
+                 if(wrongNum !== 0) choices.add(`${wrongNum}/${wrongDen}`);
+            }
+
+            const shuffledChoices = Array.from(choices).sort(() => Math.random() - 0.5);
+            
+            choiceButtons.forEach((btn, i) => {
+                btn.innerHTML = formatFractionHTML(shuffledChoices[i]);
+                btn.dataset.answer = shuffledChoices[i];
+            });
+            
             questionNumberEl.textContent = `第${questionCount}問`;
         }
         
@@ -401,25 +635,37 @@
             }, 500);
         }
 
-        function checkAnswer() {
-            if (userAnswer === '' || userAnswer === '-') return;
-            const isCorrect = parseInt(userAnswer) === currentAnswer;
+        function checkAnswer(answer) {
+            let isCorrect;
+            let userAnswerForHistory = answer;
+
+            if (settings.useFractions) {
+                isCorrect = (answer === currentAnswer);
+            } else {
+                if (userAnswer === '' || userAnswer === '-' || userAnswer === '.') return;
+                isCorrect = Math.abs(parseFloat(userAnswer) - currentAnswer) < 0.01;
+                userAnswerForHistory = userAnswer;
+            }
+
             showFeedback(isCorrect);
             if (isCorrect) correctCount++;
 
             questionHistory.push({
-                question: questionEl.textContent.replace('×', '*').replace('÷', '/'),
-                userAnswer: userAnswer,
-                correctAnswer: currentAnswer,
-                isCorrect: isCorrect
+                question: questionEl.innerHTML,
+                userAnswer: userAnswerForHistory,
+                correctAnswer: settings.useFractions ? currentAnswer : preciseCurrentAnswer,
+                isCorrect: isCorrect,
+                isFraction: settings.useFractions
             });
 
-            questionCount++;
-            userAnswer = '';
-            answerDisplayEl.textContent = '';
-            generateQuestion();
+            setTimeout(() => {
+                questionCount++;
+                userAnswer = '';
+                answerDisplayEl.textContent = '';
+                generateQuestion();
+            }, 500);
         }
-
+        
         function updateTimer() {
             timeLeft--;
             const minutes = Math.floor(timeLeft / 60);
@@ -440,33 +686,26 @@
             settings.difficulty3 = difficulty3Select.value;
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
             settings.operators = Array.from(checkedOperators).map(el => el.value);
+            settings.useDecimals = opDecimalCheckbox.checked;
+            settings.useFractions = opFractionCheckbox.checked;
             settings.time = timeSelect.value;
+            
+            if (settings.useFractions) {
+                inputModeArea.classList.add('hidden');
+                choiceModeArea.classList.remove('hidden');
+            } else {
+                inputModeArea.classList.remove('hidden');
+                choiceModeArea.classList.add('hidden');
+            }
 
             showScreen('game');
-
-            const maxDigits1 = parseInt(settings.difficulty1);
-            const maxDigits2 = parseInt(settings.difficulty2);
-            const placeholder1 = '(-' + '9'.repeat(maxDigits1) + ')';
-            const placeholder2 = '(-' + '9'.repeat(maxDigits2) + ')';
-            
-            let dummyText = `${placeholder1} + ${placeholder2}`;
-
-            if (settings.difficulty3 !== 'none') {
-                const maxDigits3 = parseInt(settings.difficulty3);
-                const placeholder3 = '(-' + '9'.repeat(maxDigits3) + ')';
-                dummyText = `${placeholder1} * ${placeholder2} + ${placeholder3}`;
-            }
-            
-            questionEl.textContent = dummyText;
-            adjustFontSize(questionEl);
-            calculatedFontSize = questionEl.style.fontSize;
-
             timeLeft = parseInt(settings.time);
             questionCount = 1;
             correctCount = 0;
             userAnswer = '';
             answerDisplayEl.textContent = '';
             questionHistory = [];
+            calculatedFontSize = ''; // Reset font size for each new game
 
             generateQuestion();
             updateTimer();
@@ -492,16 +731,19 @@
             mistakes.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'mistake-item';
-                const questionText = m.question.replace('*', '×').replace('/', '÷');
+                let questionHTML = m.isFraction ? m.question : m.question.replace(/\*/g, '×').replace(/\//g, '÷');
+                let answerHTML = m.isFraction ? formatFractionHTML(m.correctAnswer) : parseFloat(m.correctAnswer.toPrecision(12));
+                let userAnswerHTML = m.isFraction ? formatFractionHTML(m.userAnswer) : m.userAnswer;
+
                 item.innerHTML = `
-                    <div class="font-semibold text-slate-700">${questionText} = ${m.correctAnswer}</div>
-                    <div class="text-right"><span class="text-red-500 font-bold">${m.userAnswer}</span> と解答</div>`;
+                    <div class="font-semibold text-slate-700 flex items-center gap-2">${questionHTML} = ${answerHTML}</div>
+                    <div class="text-right flex items-center justify-end gap-1"><span class="text-red-500 font-bold">${userAnswerHTML}</span> と解答</div>`;
                 mistakesContainer.appendChild(item);
             });
         }
 
         function showResults() {
-            const totalQuestions = questionCount > 1 ? questionCount - 1 : 0;
+            const totalQuestions = questionHistory.length;
             scoreEl.textContent = `${correctCount}問`;
             const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
             accuracyEl.textContent = `${accuracy}%`;
@@ -516,17 +758,23 @@
             
             const mistakes = questionHistory.filter(h => !h.isCorrect);
             if (mistakes.length > 0) {
-                const mistakeTypes = {'+': 0, '-': 0, '*': 0, '/': 0};
+                const mistakeTypes = {'+': 0, '-': 0, '*': 0, '/': 0, 'decimal':0, 'fraction':0};
                 mistakes.forEach(m => {
+                    if (m.isFraction) {
+                        mistakeTypes['fraction']++;
+                    } else if (typeof m.question === 'string' && m.question.includes('.')) {
+                        mistakeTypes['decimal']++;
+                    }
                     if (m.question.includes('+')) mistakeTypes['+']++;
                     if (m.question.includes('-')) mistakeTypes['-']++;
-                    if (m.question.includes('*')) mistakeTypes['*']++;
-                    if (m.question.includes('/')) mistakeTypes['/']++;
+                    if (m.question.includes('×') || m.question.includes('*')) mistakeTypes['*']++;
+                    if (m.question.includes('÷') || m.question.includes('/')) mistakeTypes['/']++;
                 });
+
                 const mostMistakes = Object.keys(mistakeTypes).reduce((a, b) => mistakeTypes[a] > mistakeTypes[b] ? a : b);
                 if(mistakeTypes[mostMistakes] > 0){
-                    const operatorName = {'+':'足し算', '-':'引き算', '*':'掛け算', '/':'割り算'}[mostMistakes];
-                     commentText += `\n特に${operatorName}の問題でミスが多いようです。重点的に練習してみましょう。`;
+                    const operatorName = {'+':'足し算', '-':'引き算', '*':'掛け算', '/':'割り算', 'decimal':'小数計算', 'fraction':'分数計算'}[mostMistakes];
+                     commentText += `\n特に${operatorName}でミスが多いようです。重点的に練習してみましょう。`;
                 }
             }
             commentEl.innerText = commentText;
@@ -537,42 +785,57 @@
              if (key === 'C') userAnswer = '';
              else if (key === 'BS') userAnswer = userAnswer.slice(0, -1);
              else if (key === '-') { if (userAnswer === '') userAnswer = '-'; } 
+             else if (key === '.') { if (userAnswer.length > 0 && !userAnswer.includes('.')) userAnswer += '.'; }
              else if (userAnswer.length < 9) userAnswer += key;
              answerDisplayEl.textContent = userAnswer;
         }
 
-        function validateOperatorSelection() {
+        function validateSettings() {
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
-            if (checkedOperators.length === 0) {
+            const isDecimal = opDecimalCheckbox.checked;
+            const isFraction = opFractionCheckbox.checked;
+
+            if (isDecimal && isFraction) {
                 startButton.disabled = true;
-                startButton.style.backgroundImage = 'none';
+                startButton.title = "小数と分数を同時に選択することはできません。";
+            } else if (checkedOperators.length === 0) {
+                 startButton.disabled = true;
+                 startButton.title = "計算の種類を1つ以上選択してください。";
             } else {
                 startButton.disabled = false;
-                startButton.style.backgroundImage = '';
+                startButton.title = "";
             }
         }
 
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
         keypadButtons.forEach(button => button.addEventListener('click', () => handleKeypadInput(button.dataset.key)));
-        submitButton.addEventListener('click', checkAnswer);
+        backspaceBtn.addEventListener('click', () => handleKeypadInput('BS'));
+        submitButton.addEventListener('click', () => checkAnswer(userAnswer));
         retryButton.addEventListener('click', startGame);
         backToStartButton.addEventListener('click', () => showScreen('start'));
         reviewMistakesButton.addEventListener('click', () => mistakesContainer.classList.toggle('hidden'));
-        operatorSettingContainer.addEventListener('change', validateOperatorSelection);
+        operatorSettingContainer.addEventListener('change', validateSettings);
+        opDecimalCheckbox.addEventListener('change', validateSettings);
+        opFractionCheckbox.addEventListener('change', validateSettings);
+        choiceButtons.forEach(button => button.addEventListener('click', () => checkAnswer(button.dataset.answer)));
+
 
         document.addEventListener('keydown', (e) => {
-            if (screens.game.classList.contains('active')) {
+            if (screens.game.classList.contains('active') && !settings.useFractions) {
                 e.preventDefault();
-                if ((e.key >= '0' && e.key <= '9') || e.key === '-') handleKeypadInput(e.key);
+                if (e.key >= '0' && e.key <= '9') handleKeypadInput(e.key);
+                else if (e.key === '-') handleKeypadInput(e.key);
+                else if (e.key === '.') handleKeypadInput(e.key);
                 else if (e.key === 'Backspace') handleKeypadInput('BS');
-                else if (e.key === 'Enter') checkAnswer();
+                else if (e.key === 'Enter') checkAnswer(userAnswer);
             }
         });
 
-        // Initial check for operator selection
-        validateOperatorSelection();
+        // Initial check for settings
+        validateSettings();
     </script>
 </body>
 </html>
+
 
