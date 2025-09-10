@@ -28,7 +28,8 @@
             justify-content: center;
             gap: 0.5rem;
         }
-        .setting-button-group input[type="radio"] {
+        .setting-button-group input[type="radio"],
+        .setting-button-group input[type="checkbox"] {
             display: none;
         }
         .setting-button-group label {
@@ -39,7 +40,8 @@
             transition: all 0.2s ease-in-out;
             font-weight: 700;
         }
-        .setting-button-group input[type="radio"]:checked + label {
+        .setting-button-group input[type="radio"]:checked + label,
+        .setting-button-group input[type="checkbox"]:checked + label {
             background-image: linear-gradient(to right, #60a5fa, #3b82f6);
             color: white;
             border-color: #3b82f6;
@@ -59,6 +61,9 @@
         .action-btn:active {
             transform: scale(0.98);
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+        }
+        .action-btn:disabled {
+            background: #9ca3af;
         }
         .feedback {
             position: absolute;
@@ -142,11 +147,10 @@
             <div class="space-y-4">
                 <h2 class="text-xl font-bold text-slate-700 text-center">計算の種類</h2>
                 <div class="setting-button-group" id="operator-setting">
-                    <input type="radio" id="op-add" name="operator" value="+"><label for="op-add">＋</label>
-                    <input type="radio" id="op-sub" name="operator" value="-"><label for="op-sub">ー</label>
-                    <input type="radio" id="op-mul" name="operator" value="*"><label for="op-mul">×</label>
-                    <input type="radio" id="op-div" name="operator" value="/"><label for="op-div">÷</label>
-                    <input type="radio" id="op-all" name="operator" value="all" checked><label for="op-all">全て</label>
+                    <input type="checkbox" id="op-add" name="operator-choice" value="+" checked><label for="op-add">＋</label>
+                    <input type="checkbox" id="op-sub" name="operator-choice" value="-" checked><label for="op-sub">ー</label>
+                    <input type="checkbox" id="op-mul" name="operator-choice" value="*" checked><label for="op-mul">×</label>
+                    <input type="checkbox" id="op-div" name="operator-choice" value="/" checked><label for="op-div">÷</label>
                 </div>
             </div>
 
@@ -255,6 +259,8 @@
         const mistakesSection = document.getElementById('mistakes-section');
         const reviewMistakesButton = document.getElementById('review-mistakes-button');
         const mistakesContainer = document.getElementById('mistakes-container');
+        const operatorSettingContainer = document.getElementById('operator-setting');
+
 
         // Game State
         let settings = {};
@@ -312,11 +318,8 @@
             const digits1 = parseInt(settings.difficulty1);
             const digits2 = parseInt(settings.difficulty2);
 
-            let op = settings.operator;
-            if (op === 'all') {
-                const ops = ['+', '-', '*', '/'];
-                op = ops[Math.floor(Math.random() * ops.length)];
-            }
+            const availableOps = settings.operators;
+            let op = availableOps[Math.floor(Math.random() * availableOps.length)];
             
             const formatNum = (n) => (n < 0 ? `(${n})` : n);
 
@@ -409,7 +412,8 @@
         function startGame() {
             settings.difficulty1 = document.querySelector('input[name="difficulty1"]:checked').value;
             settings.difficulty2 = document.querySelector('input[name="difficulty2"]:checked').value;
-            settings.operator = document.querySelector('input[name="operator"]:checked').value;
+            const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
+            settings.operators = Array.from(checkedOperators).map(el => el.value);
             settings.time = document.querySelector('input[name="time"]:checked').value;
 
             showScreen('game'); // Show screen first to get element dimensions
@@ -530,6 +534,17 @@
             answerDisplayEl.textContent = userAnswer;
         }
 
+        function validateOperatorSelection() {
+            const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
+            if (checkedOperators.length === 0) {
+                startButton.disabled = true;
+                startButton.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                startButton.disabled = false;
+                startButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
         keypadButtons.forEach(button => {
@@ -542,6 +557,8 @@
         reviewMistakesButton.addEventListener('click', () => {
             mistakesContainer.classList.toggle('hidden');
         });
+
+        operatorSettingContainer.addEventListener('change', validateOperatorSelection);
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active')) {
