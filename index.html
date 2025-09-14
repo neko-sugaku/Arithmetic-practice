@@ -191,7 +191,7 @@
             <div id="input-mode-area">
                 <div class="flex items-center gap-2">
                     <div id="answer-display" class="flex-grow w-full bg-slate-200 text-right p-2 rounded-lg text-4xl font-bold text-slate-900 min-h-[64px]"></div>
-                    <button id="backspace-btn" class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg text-orange-500 h-[64px] w-auto flex items-center justify-center aspect-square">⌫</button>
+                    <button id="backspace-btn" class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg text-orange-500 h-[64px] w-auto flex items-center justify-center aspect-square" data-key="BS">⌫</button>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-2 mt-2">
@@ -272,7 +272,6 @@
         const questionEl = document.getElementById('question');
         const answerDisplayEl = document.getElementById('answer-display');
         const keypadButtons = document.querySelectorAll('.keypad-btn');
-        const backspaceBtn = document.getElementById('backspace-btn');
         const submitButton = document.getElementById('submit-button');
         const scoreEl = document.getElementById('score');
         const accuracyEl = document.getElementById('accuracy');
@@ -810,7 +809,6 @@
         // --- Event Listeners ---
         startButton.addEventListener('click', startGame);
         keypadButtons.forEach(button => button.addEventListener('click', () => handleKeypadInput(button.dataset.key)));
-        backspaceBtn.addEventListener('click', () => handleKeypadInput('BS'));
         submitButton.addEventListener('click', () => checkAnswer(userAnswer));
         retryButton.addEventListener('click', startGame);
         backToStartButton.addEventListener('click', () => showScreen('start'));
@@ -837,5 +835,4 @@
     </script>
 </body>
 </html>
-
 
