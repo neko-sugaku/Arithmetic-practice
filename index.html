@@ -154,6 +154,7 @@
                         <input type="checkbox" id="op-sub" name="operator-choice" value="-" checked><label for="op-sub">ー</label>
                         <input type="checkbox" id="op-mul" name="operator-choice" value="*" checked><label for="op-mul">×</label>
                         <input type="checkbox" id="op-div" name="operator-choice" value="/" checked><label for="op-div">÷</label>
+                        <input type="checkbox" id="op-natural" name="number-type"><label for="op-natural">自然数</label>
                         <input type="checkbox" id="op-decimal" name="number-type"><label for="op-decimal">小数</label>
                         <input type="checkbox" id="op-fraction" name="number-type"><label for="op-fraction">分数</label>
                     </div>
@@ -191,7 +192,7 @@
             <div id="input-mode-area">
                 <div class="flex items-center gap-2">
                     <div id="answer-display" class="flex-grow w-full bg-slate-200 text-right p-2 rounded-lg text-4xl font-bold text-slate-900 min-h-[64px]"></div>
-                    <button id="backspace-btn" class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg text-orange-500 h-[64px] w-auto flex items-center justify-center aspect-square" data-key="BS">⌫</button>
+                    <button class="keypad-btn text-3xl font-bold p-4 bg-slate-100 rounded-lg text-orange-500 h-[64px] w-auto flex items-center justify-center aspect-square" data-key="BS">⌫</button>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-2 mt-2">
@@ -293,6 +294,7 @@
         const difficulty2Select = document.getElementById('difficulty2-select');
         const difficulty3Select = document.getElementById('difficulty3-select');
         const timeSelect = document.getElementById('time-select');
+        const opNaturalCheckbox = document.getElementById('op-natural');
         const opDecimalCheckbox = document.getElementById('op-decimal');
         const opFractionCheckbox = document.getElementById('op-fraction');
 
@@ -324,6 +326,13 @@
             const max = Math.pow(10, digits) - 1;
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
+        
+        function generateNaturalNumber(digits) {
+            if (digits == 1) return Math.floor(Math.random() * 9) + 1; // 1-9
+            const min = Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
 
         function generateDecimal(digits) {
             const decimalPlaces = Math.floor(Math.random() * digits) + 1;
@@ -345,6 +354,9 @@
         function generateNumberWithOptions(digits) {
             if (settings.useFractions) {
                 return generateFraction(digits);
+            }
+            if (settings.useNaturalNumbers) {
+                return generateNaturalNumber(digits);
             }
             if (!settings.useDecimals || Math.random() > 0.5) {
                 let num = generateNumber(digits);
@@ -396,12 +408,16 @@
             const formatNum = (n) => (n < 0 ? `(${n})` : n);
             
             if (settings.useFractions) {
-                questionEl.style.fontSize = ''; // Reset font size for fraction mode
+                questionEl.style.fontSize = ''; 
                 generateFractionQuestion();
                 return;
             }
+            if (settings.useNaturalNumbers) {
+                questionEl.style.fontSize = '';
+                generateNaturalNumberQuestion();
+                return;
+            }
              
-            // FONT SIZE CALCULATION (only for the first question in non-fraction mode)
             if (questionCount === 1 && !calculatedFontSize) {
                 const maxDigits1 = parseInt(settings.difficulty1);
                 const maxDigits2 = parseInt(settings.difficulty2);
@@ -567,6 +583,92 @@
             }
             questionNumberEl.textContent = `第${questionCount}問`;
         }
+
+        function generateNaturalNumberQuestion() {
+            let questionText;
+            let tempAnswer;
+            let attempt = 0;
+            let isValid = false;
+            const availableOps = settings.operators;
+            const formatNum = (n) => n; // No brackets for natural numbers
+
+            if (settings.difficulty3 !== 'none') {
+                const digits1 = parseInt(settings.difficulty1);
+                const digits2 = parseInt(settings.difficulty2);
+                const digits3 = parseInt(settings.difficulty3);
+                
+                do {
+                    let num1 = generateNaturalNumber(digits1);
+                    let num2 = generateNaturalNumber(digits2);
+                    let num3 = generateNaturalNumber(digits3);
+                    let op1 = availableOps[Math.floor(Math.random() * availableOps.length)];
+                    let op2 = availableOps[Math.floor(Math.random() * availableOps.length)];
+                    let calcText = `${num1} ${op1} ${num2} ${op2} ${num3}`;
+                    
+                    try { tempAnswer = eval(calcText); } catch (e) { tempAnswer = NaN; }
+
+                    isValid = tempAnswer > 0 && Number.isInteger(tempAnswer);
+                    
+                    if (isValid) {
+                         const displayOp1 = op1 === '*' ? '×' : op1 === '/' ? '÷' : op1;
+                         const displayOp2 = op2 === '*' ? '×' : op2 === '/' ? '÷' : op2;
+                         questionText = `${num1} ${displayOp1} ${num2} ${displayOp2} ${num3}`;
+                         currentAnswer = tempAnswer;
+                         preciseCurrentAnswer = tempAnswer;
+                    }
+                    attempt++;
+                } while (!isValid && attempt < 500);
+
+                if (!isValid) { // Fallback
+                    questionText = "10 + 5 - 3";
+                    currentAnswer = 12;
+                    preciseCurrentAnswer = 12;
+                }
+            } else {
+                const digits1 = parseInt(settings.difficulty1);
+                const digits2 = parseInt(settings.difficulty2);
+                const op = availableOps[Math.floor(Math.random() * availableOps.length)];
+                let num1, num2;
+
+                do {
+                     if (op === '-') {
+                        num1 = generateNaturalNumber(digits1);
+                        num2 = generateNaturalNumber(digits2);
+                        if (num1 > num2) {
+                            tempAnswer = num1 - num2;
+                            isValid = true;
+                        }
+                     } else if (op === '/') {
+                        let ans = generateNaturalNumber(digits1 > 1 ? Math.floor(digits1 / 2) + 1 : 1);
+                        num2 = generateNaturalNumber(digits2);
+                        num1 = ans * num2;
+                        if (num1 < Math.pow(10, digits1)) {
+                             tempAnswer = ans;
+                             isValid = true;
+                        }
+                     } else { // + and *
+                        num1 = generateNaturalNumber(digits1);
+                        num2 = generateNaturalNumber(digits2);
+                        tempAnswer = (op === '+') ? num1 + num2 : num1 * num2;
+                        if(tempAnswer < Math.pow(10, Math.max(digits1, digits2) + 1)) isValid = true;
+                     }
+                     attempt++;
+                } while (!isValid && attempt < 200);
+
+                if(!isValid){ // Fallback
+                    num1 = 10; num2 = 5;
+                    tempAnswer = (op === '-') ? 5 : (op === '/') ? 2 : (op === '+') ? 15 : 50;
+                }
+
+                currentAnswer = tempAnswer;
+                preciseCurrentAnswer = tempAnswer;
+                const displayOp = op === '*' ? '×' : op === '/' ? '÷' : op;
+                questionText = `${num1} ${displayOp} ${num2}`;
+            }
+            
+            questionEl.innerHTML = questionText;
+            questionNumberEl.textContent = `第${questionCount}問`;
+        }
         
         function generateFractionQuestion() {
             const digits1 = parseInt(settings.difficulty1);
@@ -600,7 +702,6 @@
             const displayOp = op === '*' ? '×' : op === '/' ? '÷' : op;
             questionEl.innerHTML = `${formatFractionHTML(f1)} ${displayOp} ${formatFractionHTML(f2)}`;
             
-            // Generate choices
             const choices = new Set([currentAnswer]);
             
             if (op === '+') choices.add(`${f1.num + f2.num}/${f1.den + f2.den}`);
@@ -685,6 +786,7 @@
             settings.difficulty3 = difficulty3Select.value;
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
             settings.operators = Array.from(checkedOperators).map(el => el.value);
+            settings.useNaturalNumbers = opNaturalCheckbox.checked;
             settings.useDecimals = opDecimalCheckbox.checked;
             settings.useFractions = opFractionCheckbox.checked;
             settings.time = timeSelect.value;
@@ -791,13 +893,7 @@
 
         function validateSettings() {
             const checkedOperators = document.querySelectorAll('input[name="operator-choice"]:checked');
-            const isDecimal = opDecimalCheckbox.checked;
-            const isFraction = opFractionCheckbox.checked;
-
-            if (isDecimal && isFraction) {
-                startButton.disabled = true;
-                startButton.title = "小数と分数を同時に選択することはできません。";
-            } else if (checkedOperators.length === 0) {
+            if (checkedOperators.length === 0) {
                  startButton.disabled = true;
                  startButton.title = "計算の種類を1つ以上選択してください。";
             } else {
@@ -814,10 +910,30 @@
         backToStartButton.addEventListener('click', () => showScreen('start'));
         reviewMistakesButton.addEventListener('click', () => mistakesContainer.classList.toggle('hidden'));
         operatorSettingContainer.addEventListener('change', validateSettings);
-        opDecimalCheckbox.addEventListener('change', validateSettings);
-        opFractionCheckbox.addEventListener('change', validateSettings);
-        choiceButtons.forEach(button => button.addEventListener('click', () => checkAnswer(button.dataset.answer)));
 
+        opNaturalCheckbox.addEventListener('change', () => {
+            if(opNaturalCheckbox.checked) {
+                opDecimalCheckbox.checked = false;
+                opFractionCheckbox.checked = false;
+            }
+            validateSettings();
+        });
+        opDecimalCheckbox.addEventListener('change', () => {
+            if(opDecimalCheckbox.checked) {
+                opNaturalCheckbox.checked = false;
+                opFractionCheckbox.checked = false;
+            }
+            validateSettings();
+        });
+        opFractionCheckbox.addEventListener('change', () => {
+            if(opFractionCheckbox.checked) {
+                opNaturalCheckbox.checked = false;
+                opDecimalCheckbox.checked = false;
+            }
+            validateSettings();
+        });
+
+        choiceButtons.forEach(button => button.addEventListener('click', () => checkAnswer(button.dataset.answer)));
 
         document.addEventListener('keydown', (e) => {
             if (screens.game.classList.contains('active') && !settings.useFractions) {
